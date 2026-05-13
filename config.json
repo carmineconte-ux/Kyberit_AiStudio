@@ -1,0 +1,66 @@
+{
+  "smtp": {
+    "host": "smtp.resend.com",
+    "port": 465,
+    "user": "resend",
+    "pass": "re_UVhWJTyW_4xTdH4YmXnLzTkyY9KLWg7mL",
+    "from": "no-reply@news.kyberit.tech"
+  },
+  "sanity": {
+    "projectId": "z5l0qfg5",
+    "dataset": "production",
+    "organizationId": "o01oYDXF8"
+  },
+  "iubenda": {
+    "siteId": "4492368",
+    "policyId": "85043270"
+  },
+  "turnstile": {
+    "siteKey": "0x4AAAAAAC58470FM4SzJ7Yf",
+    "secretKey": "0x4AAAAAAC5844uQslJAGCGMM_5iq1_CL6c"
+  },
+  "diagnostics": [
+    {
+      "id": "ypynax6ax9",
+      "timestamp": "2026-04-10T15:55:43.473Z",
+      "url": "https://riconciliazione.net",
+      "email": "carmineconte@gmail.com",
+      "score": 64,
+      "status": "Attenzione",
+      "summary": "Il sito presenta vulnerabilità sistemiche negli header di sicurezza e performance subottimali nel caricamento dei contenuti. Necessario un rafforzamento delle policy di protezione e un'ottimizzazione degli asset per migliorare il core web vital LCP.",
+      "report": {
+        "score": 64,
+        "status": "Attenzione",
+        "sections": [
+          {
+            "findings": [
+              "Assenza di Content-Security-Policy (CSP)",
+              "HSTS non implementato correttamente",
+              "Esposizione versione server negli header HTTP",
+              "Mancanza di protezione X-Content-Type-Options"
+            ],
+            "score": 55,
+            "title": "Sicurezza"
+          },
+          {
+            "findings": [
+              "LCP superiore ai 2.5 secondi",
+              "Asset CSS e JS non minificati",
+              "Assenza di supporto al protocollo HTTP/3",
+              "Immagini caricate senza attributi di dimensione espliciti"
+            ],
+            "score": 72,
+            "title": "Performance"
+          }
+        ],
+        "recommendations": [
+          "Implementare una Content-Security-Policy restrittiva",
+          "Abilitare HSTS con preload",
+          "Ottimizzare le immagini tramite compressione WebP",
+          "Configurare il caching del browser per asset statici"
+        ],
+        "summary": "Il sito presenta vulnerabilità sistemiche negli header di sicurezza e performance subottimali nel caricamento dei contenuti. Necessario un rafforzamento delle policy di protezione e un'ottimizzazione degli asset per migliorare il core web vital LCP."
+      }
+    }
+  ]
+}
