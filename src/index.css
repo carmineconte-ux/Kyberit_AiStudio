@@ -52,3 +52,25 @@
   animation: scanline 8s linear infinite;
   pointer-events: none;
 }
+
+.cyber-panel {
+  @apply bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 relative overflow-hidden transition-all duration-500 hover:border-kyber-cyan/30 hover:bg-white/[0.04];
+}
+
+@keyframes scanline-h {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(800%); }
+}
+
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-kyber-cyan), transparent);
+  animation: scanline-h 8s linear infinite;
+  pointer-events: none;
+  opacity: 0.25;
+}
+

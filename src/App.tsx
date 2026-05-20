@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Terminal, Shield, Globe, Network, Cpu, Activity, ArrowRight, CheckCircle2, Star, Quote, Send, Mail, Phone, MapPin, Search, Rocket, PenTool, ShieldCheck, ChevronDown } from "lucide-react";
+import { Terminal, Shield, Globe, Network, Cpu, Activity, ArrowRight, CheckCircle2, Star, Quote, Send, Mail, Phone, MapPin, Search, Rocket, PenTool, ShieldCheck, ChevronDown, Target, Crown, Zap } from "lucide-react";
 import { useState, useEffect, useRef, FormEvent, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
@@ -75,8 +75,10 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
+    { name: t("nav.about"), href: "#chi-siamo" },
     { name: t("nav.services"), href: "#servizi" },
     { name: t("nav.process"), href: "#processo" },
+    { name: t("nav.pricing"), href: "#listino" },
     { name: t("nav.diagnostics"), href: "#diagnostica" },
     { name: t("nav.contact"), href: "#contatti" },
   ];
@@ -283,6 +285,210 @@ const Hero = () => {
             </div>
           </motion.div>
         </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const About = () => {
+  const { t } = useTranslation();
+
+  return (
+    <section id="chi-siamo" className="py-24 border-b border-white/5 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-kyber-cyan/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-16"
+        >
+          <div className="text-left mb-4">
+            <span className="text-[10px] text-gray-500 font-mono tracking-[0.4em] uppercase block mb-2">
+              {t("about.badge")}
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
+              {t("about.title")}
+            </h2>
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+          {/* Left Panel: The Helmsman / Etymology */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="cyber-panel rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex flex-col justify-between"
+          >
+            <div className="scan-line" />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-kyber-cyan/15 rounded-xl flex items-center justify-center text-kyber-cyan">
+                  <Zap size={20} className="animate-pulse" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">
+                  {t("about.pilotTitle")}
+                </h3>
+              </div>
+              <p
+                className="text-gray-400 text-sm md:text-base leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: t("about.pilotDesc") }}
+              />
+            </div>
+            <div className="mt-8 border-t border-white/5 pt-6 flex items-center gap-4 text-xs text-gray-500 font-mono">
+              <span className="text-kyber-cyan">01.01</span>
+              <span>// ORIGIN STORY</span>
+            </div>
+          </motion.div>
+
+          {/* Right Panel: The Founder */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="cyber-panel rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex flex-col justify-between"
+          >
+            <div className="scan-line" />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-kyber-blue/15 rounded-xl flex items-center justify-center text-kyber-blue">
+                  <ShieldCheck size={20} />
+                </div>
+                <h3 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">
+                  {t("about.founderTitle")}
+                </h3>
+              </div>
+              <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                {t("about.founderDesc")}
+              </p>
+            </div>
+            <div className="mt-8 border-t border-white/5 pt-6 flex items-center gap-4 text-xs text-gray-500 font-mono">
+              <span className="text-kyber-blue">01.02</span>
+              <span>// LEADERSHIP & AUTHORITY</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Pricing = () => {
+  const { t } = useTranslation();
+
+  const tiers = [
+    {
+      key: "oneShot",
+      icon: <Target className="text-kyber-cyan" size={24} />,
+      glow: "hover:border-kyber-cyan/40 hover:shadow-[0_0_30px_rgba(0,242,255,0.05)]",
+      borderColor: "border-white/5",
+      badgeColor: "bg-white/5 text-gray-400",
+      buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+    },
+    {
+      key: "shield",
+      icon: <Shield className="text-kyber-blue" size={24} />,
+      glow: "border-kyber-blue/30 bg-kyber-blue/[0.01] hover:border-kyber-blue/60 hover:shadow-[0_0_30px_rgba(0,102,255,0.1)]",
+      borderColor: "border-kyber-blue/20",
+      badgeColor: "bg-kyber-blue/15 text-kyber-cyan",
+      buttonStyle: "bg-kyber-blue text-white hover:bg-kyber-blue/80 hover:shadow-[0_0_15px_rgba(0,102,255,0.3)] border-transparent"
+    },
+    {
+      key: "enterprise",
+      icon: <Crown className="text-amber-400" size={24} />,
+      glow: "hover:border-amber-400/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.05)]",
+      borderColor: "border-white/5",
+      badgeColor: "bg-white/5 text-gray-400",
+      buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+    }
+  ];
+
+  return (
+    <section id="listino" className="py-24 border-b border-white/5 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-kyber-blue/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-16 text-left"
+        >
+          <span className="text-[10px] text-gray-500 font-mono tracking-[0.4em] uppercase block mb-2">
+            {t("pricing.badge")}
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
+            {t("pricing.title")}
+          </h2>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {tiers.map((tier, idx) => {
+            const features = t(`pricing.${tier.key}.features`, { returnObjects: true }) as string[];
+
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.15 }}
+                className={`cyber-panel rounded-[2.5rem] p-8 relative overflow-hidden flex flex-col justify-between border ${tier.borderColor} ${tier.glow} group`}
+              >
+                <div className="scan-line" />
+
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <span className={`text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full font-semibold ${tier.badgeColor}`}>
+                      {t(`pricing.${tier.key}.subtitle`)}
+                    </span>
+                    <div className="p-3 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                      {tier.icon}
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-black tracking-tight text-white mb-2 uppercase italic">
+                    {t(`pricing.${tier.key}.title`)}
+                  </h3>
+
+                  <div className="mb-8 flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-white tracking-tighter neon-text">
+                      {t(`pricing.${tier.key}.price`)}
+                    </span>
+                    <span className="text-sm text-gray-500 font-mono font-medium">
+                      {t(`pricing.${tier.key}.period`)}
+                    </span>
+                  </div>
+
+                  <ul className="space-y-4 mb-10 border-t border-white/5 pt-6">
+                    {Array.isArray(features) && features.map((feature, i) => (
+                      <li key={i} className="text-gray-400 text-sm flex items-start gap-3 leading-relaxed">
+                        <span className="text-kyber-cyan mt-1 text-xs">▪</span>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <a
+                  href="#contatti"
+                  className={`w-full text-center py-4 rounded-2xl font-bold text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${tier.buttonStyle}`}
+                >
+                  {t("pricing.button")}
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+                </a>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -1682,8 +1888,10 @@ export default function App() {
             <div className="relative">
               <Navbar />
               <Hero />
+              <About />
               <Services />
               <Process />
+              <Pricing />
               <Diagnostic />
               <Testimonials />
               <ContactForm />
@@ -1695,8 +1903,10 @@ export default function App() {
             <div className="relative">
               <Navbar />
               <Hero />
+              <About />
               <Services />
               <Process />
+              <Pricing />
               <Diagnostic />
               <Testimonials />
               <ContactForm />

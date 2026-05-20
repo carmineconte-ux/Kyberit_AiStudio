@@ -2,8 +2,10 @@ export const translations = {
   it: {
     translation: {
       nav: {
+        about: "Identity & Vision",
         services: "Servizi",
         process: "Processo",
+        pricing: "Protocolli SLA",
         diagnostics: "Diagnostica",
         contact: "Contatti",
         freeAnalysis: "Analisi Gratuita"
@@ -187,14 +189,62 @@ export const translations = {
           services: "Servizi",
           company: "Azienda"
         }
+      },
+      about: {
+        badge: "01 // GOVERNANCE & IDENTITY",
+        title: "IDENTITY & VISION",
+        founderTitle: "CARMINE CONTE // FOUNDER",
+        founderDesc: "Senior Google Workspace Admin con oltre 20 anni di esperienza nella gestione di architetture sistemistiche mission-critical. Ex IT Manager con un background solido maturato in contesti ad alte prestazioni, oggi mette a disposizione la propria autorità per garantire la resilienza infrastrutturale nell'era dei modelli neurali.",
+        pilotTitle: "IL TIMONIERE (KYBERNETES)",
+        pilotDesc: "Dal greco <span class=\"text-kyber-cyan font-mono italic\">\"Kybernetes\"</span>: il timoniere. <span class=\"text-white font-bold\">Kyberit</span> nasce per guidare le imprese attraverso la tempesta digitale, fondendo la governance dei sistemi (<span class=\"text-kyber-cyan font-bold\">Kyber</span>) con l'eccellenza e la sovranità dell'ingegneria italiana (<span class=\"text-kyber-blue font-bold\">IT</span>)."
+      },
+      pricing: {
+        badge: "02 // SERVICE LEVEL AGREEMENTS",
+        title: "PROTOCOLLI SLA",
+        button: "Scegli Configurazione",
+        oneShot: {
+          title: "AUDIT ONE-SHOT",
+          subtitle: "Punto d'Ingresso",
+          price: "€ 450",
+          period: "/una tantum",
+          features: [
+            "Analisi completa sicurezza e hardware",
+            "Report dettagliato vulnerabilità infrastrutturali",
+            "Valutazione iniziale conformità NIS2 / GDPR"
+          ]
+        },
+        shield: {
+          title: "SOVEREIGN SHIELD",
+          subtitle: "Governance Continua",
+          price: "€ 60",
+          period: "/mese",
+          features: [
+            "Web Care Professional (Backup & Security crittografati)",
+            "Monitoraggio proattivo e latenza zero 24/7",
+            "Aggiornamenti periodici e monitoraggio DNS"
+          ]
+        },
+        enterprise: {
+          title: "ELITE ENTERPRISE",
+          subtitle: "Infrastruttura Totale",
+          price: "SU PROGETTO",
+          period: "",
+          features: [
+            "Migrazione Cloud d'élite (Workspace / M365) [€900]",
+            "Sviluppo Web Architecture o Dashboard custom [€1500]",
+            "Supporto Sistemistico Senior dedicato [€65/ora]"
+          ]
+        }
       }
     }
   },
   en: {
     translation: {
       nav: {
+        about: "Identity & Vision",
         services: "Services",
         process: "Process",
+        pricing: "SLA Protocols",
         diagnostics: "Diagnostics",
         contact: "Contact",
         freeAnalysis: "Free Analysis"
@@ -378,14 +428,62 @@ export const translations = {
           services: "Services",
           company: "Company"
         }
+      },
+      about: {
+        badge: "01 // GOVERNANCE & IDENTITY",
+        title: "IDENTITY & VISION",
+        founderTitle: "CARMINE CONTE // FOUNDER",
+        founderDesc: "Senior Google Workspace Admin with over 20 years of experience managing mission-critical systems architectures. Former IT Manager with a solid background built in high-performance environments, today he leverages his expertise to ensure infrastructure resilience in the age of neural models.",
+        pilotTitle: "THE HELMSMAN (KYBERNETES)",
+        pilotDesc: "From the Greek <span class=\"text-kyber-cyan font-mono italic\">\"Kybernetes\"</span>: the helmsman. <span class=\"text-white font-bold\">Kyberit</span> was born to guide businesses through the digital storm, fusing system governance (<span class=\"text-kyber-cyan font-bold\">Kyber</span>) with the excellence and sovereignty of Italian engineering (<span class=\"text-kyber-blue font-bold\">IT</span>)."
+      },
+      pricing: {
+        badge: "02 // SERVICE LEVEL AGREEMENTS",
+        title: "SLA PROTOCOLS",
+        button: "Choose Configuration",
+        oneShot: {
+          title: "AUDIT ONE-SHOT",
+          subtitle: "Entry Point",
+          price: "€ 450",
+          period: "/one-time",
+          features: [
+            "Complete security and hardware analysis",
+            "Detailed infrastructure vulnerability report",
+            "Initial NIS2 / GDPR compliance assessment"
+          ]
+        },
+        shield: {
+          title: "SOVEREIGN SHIELD",
+          subtitle: "Continuous Governance",
+          price: "€ 60",
+          period: "/month",
+          features: [
+            "Web Care Professional (Encrypted Backup & Security)",
+            "Proactive monitoring & zero latency 24/7",
+            "Periodic updates and DNS monitoring"
+          ]
+        },
+        enterprise: {
+          title: "ELITE ENTERPRISE",
+          subtitle: "Total Infrastructure",
+          price: "ON PROJECT",
+          period: "",
+          features: [
+            "Elite Cloud migration (Workspace / M365) [€900]",
+            "Web Architecture development or custom Dashboards [€1500]",
+            "Dedicated Senior System Support [€65/hour]"
+          ]
+        }
       }
     }
   },
   de: {
     translation: {
       nav: {
+        about: "Identity & Vision",
         services: "Dienstleistungen",
         process: "Prozess",
+        pricing: "SLA-Protokolle",
         diagnostics: "Diagnose",
         contact: "Kontakt",
         freeAnalysis: "Kostenlose Analyse"
@@ -567,14 +665,62 @@ export const translations = {
           services: "Dienstleistungen",
           company: "Unternehmen"
         }
+      },
+      about: {
+        badge: "01 // GOVERNANCE & IDENTITÄT",
+        title: "IDENTITY & VISION",
+        founderTitle: "CARMINE CONTE // GRÜNDER",
+        founderDesc: "Senior Google Workspace Administrator mit über 20 Jahren Erfahrung in der Verwaltung geschäftskritischer Systemarchitekturen. Als ehemaliger IT-Manager mit fundiertem Hintergrund in Hochleistungsumgebungen stellt er heute seine Kompetenz zur Verfügung, um die Infrastrukturresilienz im Zeitalter neuronaler Modelle zu gewährleisten.",
+        pilotTitle: "DER STEUERMANN (KYBERNETES)",
+        pilotDesc: "Aus dem Griechischen <span class=\"text-kyber-cyan font-mono italic\">\"Kybernetes\"</span>: der Steuermann. <span class=\"text-white font-bold\">Kyberit</span> wurde gegründet, um Unternehmen durch den digitalen Sturm zu führen, indem es System-Governance (<span class=\"text-kyber-cyan font-bold\">Kyber</span>) mit der Exzellenz und Souveränität italienischer Ingenieurskunst (<span class=\"text-kyber-blue font-bold\">IT</span>) verbindet."
+      },
+      pricing: {
+        badge: "02 // SERVICE LEVEL AGREEMENTS",
+        title: "SLA-PROTOKOLLE",
+        button: "Konfiguration Wählen",
+        oneShot: {
+          title: "AUDIT ONE-SHOT",
+          subtitle: "Einstiegspunkt",
+          price: "€ 450",
+          period: "/einmalig",
+          features: [
+            "Vollständige Sicherheits- und Hardwareanalyse",
+            "Detaillierter Bericht zu Infrastrukturschwachstellen",
+            "Erstbewertung der NIS2- / DSGVO-Konformität"
+          ]
+        },
+        shield: {
+          title: "SOVEREIGN SHIELD",
+          subtitle: "Kontinuierliche Governance",
+          price: "€ 60",
+          period: "/Monat",
+          features: [
+            "Web Care Professional (Verschlüsseltes Backup & Sicherheit)",
+            "Proaktives Monitoring & Null-Latenz 24/7",
+            "Regelmäßige Updates und DNS-Überwachung"
+          ]
+        },
+        enterprise: {
+          title: "ELITE ENTERPRISE",
+          subtitle: "Gesamte Infrastruktur",
+          price: "AUF ANFRAGE",
+          period: "",
+          features: [
+            "Elite Cloud-Migration (Workspace / M365) [€900]",
+            "Entwicklung von Webarchitekturen oder maßgeschneiderten Dashboards [€1500]",
+            "Dedizierter Senior-System-Support [€65/Std.]"
+          ]
+        }
       }
     }
   },
   fr: {
     translation: {
       nav: {
+        about: "Identity & Vision",
         services: "Services",
         process: "Processus",
+        pricing: "Protocoles SLA",
         diagnostics: "Diagnostics",
         contact: "Contact",
         freeAnalysis: "Analyse Gratuite"
@@ -755,6 +901,52 @@ export const translations = {
         sections: {
           services: "Services",
           company: "Entreprise"
+        }
+      },
+      about: {
+        badge: "01 // GOUVERNANCE & IDENTITÉ",
+        title: "IDENTITY & VISION",
+        founderTitle: "CARMINE CONTE // FONDATEUR",
+        founderDesc: "Administrateur Senior Google Workspace avec plus de 20 ans d'expérience dans la gestion d'architectures de systèmes critiques. Ancien directeur informatique doté d'une solide expérience acquise dans des environnements de haute performance, il met aujourd'hui son expertise au service de la résilience des infrastructures à l'ère des modèles neuronaux.",
+        pilotTitle: "LE TIMONIER (KYBERNETES)",
+        pilotDesc: "Du grec <span class=\"text-kyber-cyan font-mono italic\">\"Kybernetes\"</span> : le timonier. <span class=\"text-white font-bold\">Kyberit</span> est né pour guider les entreprises à travers la tempête numérique, fusionnant la gouvernance des systèmes (<span class=\"text-kyber-cyan font-bold\">Kyber</span>) avec l'excellence et la souveraineté de l'ingénieria italienne (<span class=\"text-kyber-blue font-bold\">IT</span>)."
+      },
+      pricing: {
+        badge: "02 // SERVICE LEVEL AGREEMENTS",
+        title: "PROTOCOLES SLA",
+        button: "Choisir la Configuration",
+        oneShot: {
+          title: "AUDIT ONE-SHOT",
+          subtitle: "Point d'Entrée",
+          price: "€ 450",
+          period: "/unique",
+          features: [
+            "Analyse complète de la sécurité et du matériel",
+            "Rapport détaillé des vulnérabilités de l'infrastructure",
+            "Évaluation initiale de la conformité NIS2 / RGPD"
+          ]
+        },
+        shield: {
+          title: "SOVEREIGN SHIELD",
+          subtitle: "Gouvernance Continue",
+          price: "€ 60",
+          period: "/mois",
+          features: [
+            "Web Care Professional (Sauvegarde & Sécurité cryptées)",
+            "Surveillance proactive et latence zéro 24/7",
+            "Mises à jour périodiques et surveillance DNS"
+          ]
+        },
+        enterprise: {
+          title: "ELITE ENTERPRISE",
+          subtitle: "Infrastructure Totale",
+          price: "SUR PROJET",
+          period: "",
+          features: [
+            "Migration Cloud d'élite (Workspace / M365) [€900]",
+            "Développement d'architecture Web ou de tableaux de bord personnalisés [€1500]",
+            "Support système senior dédié [€65/heure]"
+          ]
         }
       }
     }
