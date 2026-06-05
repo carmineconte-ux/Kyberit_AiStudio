@@ -6,12 +6,22 @@ export default {
     {
       name: 'title',
       title: 'Titolo',
-      type: 'string',
+      type: 'localeString',
+    },
+    {
+      name: 'subtitle',
+      title: 'Sottotitolo',
+      type: 'localeString',
     },
     {
       name: 'description',
       title: 'Descrizione',
-      type: 'text',
+      type: 'localeText',
+    },
+    {
+      name: 'features',
+      title: 'Funzionalità (Elenco)',
+      type: 'localeArrayString',
     },
     {
       name: 'icon',

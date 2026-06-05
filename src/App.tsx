@@ -495,19 +495,40 @@ const Pricing = () => {
   );
 };
 
-const Services = () => {
-  const { t } = useTranslation();
+const Services = ({ sanityConfig }: { sanityConfig?: any }) => {
+  const { t, i18n } = useTranslation();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [sanityServices, setSanityServices] = useState<any[]>([]);
 
-  const services = [
+  useEffect(() => {
+    if (!sanityConfig) {
+      return;
+    }
+    
+    const lang = i18n.language.split('-')[0];
+
+    const client = getSanityClient(sanityConfig.projectId, sanityConfig.dataset);
+    client.fetch(`*[_type == "service"] | order(order asc) {
+      _id,
+      "title": coalesce(title[$lang], title.it),
+      "subTitle": coalesce(subtitle[$lang], subtitle.it),
+      "desc": coalesce(description[$lang], description.it),
+      "features": coalesce(features[$lang], features.it),
+      "image": image.asset->url
+    }`, { lang }).then((data: any[]) => {
+      setSanityServices(data);
+    }).catch((err: any) => {
+      console.error("Sanity fetch error:", err);
+    });
+  }, [sanityConfig, i18n.language]);
+
+  const fallbackServices = [
     {
       id: "WEB.DEV",
       title: t("services.items.web.title"),
       subTitle: t("services.items.web.sub"),
       desc: t("services.items.web.desc"),
       features: t("services.items.web.features", { returnObjects: true }) as string[],
-      icon: <Globe className="text-kyber-cyan" size={24} />,
-      price: "Da €2.500",
       image: "/photo/Siti Web.webp"
     },
     {
@@ -516,8 +537,6 @@ const Services = () => {
       subTitle: t("services.items.network.sub"),
       desc: t("services.items.network.desc"),
       features: t("services.items.network.features", { returnObjects: true }) as string[],
-      icon: <Network className="text-kyber-cyan" size={24} />,
-      price: "Da €1.200",
       image: "/photo/Networking.webp"
     },
     {
@@ -526,8 +545,6 @@ const Services = () => {
       subTitle: t("services.items.consult.sub"),
       desc: t("services.items.consult.desc"),
       features: t("services.items.consult.features", { returnObjects: true }) as string[],
-      icon: <Cpu className="text-kyber-cyan" size={24} />,
-      price: "Su Preventivo",
       image: "/photo/Consulenza Aziendale.webp"
     },
     {
@@ -536,11 +553,18 @@ const Services = () => {
       subTitle: t("services.items.security.sub"),
       desc: t("services.items.security.desc"),
       features: t("services.items.security.features", { returnObjects: true }) as string[],
-      icon: <Shield className="text-kyber-cyan" size={24} />,
-      price: "Da €3.000",
       image: "/photo/CyberSecurity.webp"
     }
   ];
+
+  const services = sanityServices.length > 0 ? sanityServices.map(s => ({
+    id: s._id,
+    title: s.title,
+    subTitle: s.subTitle,
+    desc: s.desc,
+    features: s.features || [],
+    image: s.image
+  })) : fallbackServices;
 
   return (
     <section id="servizi" className="py-24 relative bg-black">
@@ -1615,7 +1639,7 @@ export default function App() {
               <Navbar />
               <Hero />
               <About />
-              <Services />
+              <Services sanityConfig={dynamicSanityConfig} />
               <Process />
               <Pricing />
 
@@ -1630,7 +1654,7 @@ export default function App() {
               <Navbar />
               <Hero />
               <About />
-              <Services />
+              <Services sanityConfig={dynamicSanityConfig} />
               <Process />
               <Pricing />
 
