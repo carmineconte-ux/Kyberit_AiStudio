@@ -89,7 +89,7 @@ export const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? "bg-black/90 backdrop-blur-xl border-b border-white/10 py-4 shadow-2xl" : "bg-transparent py-8"}`}>
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-kyber-cyan flex items-center justify-center rounded-sm rotate-45 group-hover:rotate-90 transition-transform duration-500 shadow-lg shadow-kyber-cyan/20">
             <span className="text-black font-black -rotate-45 group-hover:-rotate-90 transition-transform duration-500">K</span>
