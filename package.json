@@ -13,6 +13,7 @@
   "dependencies": {
     "@google/genai": "^1.49.0",
     "@google/generative-ai": "^0.24.1",
+    "@portabletext/react": "^6.2.0",
     "@react-oauth/google": "^0.13.5",
     "@sanity/client": "^7.20.0",
     "@sanity/vision": "^5.20.0",

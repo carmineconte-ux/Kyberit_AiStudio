@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { GoogleGenAI, Type } from "@google/genai";
 import SetupPage from "./SetupPage";
+import LegalPage from "./LegalPage";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 declare global {
@@ -65,7 +66,7 @@ const LanguageSwitcher = () => {
   );
 };
 
-const Navbar = () => {
+export const Navbar = () => {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1162,7 +1163,7 @@ const ContactForm = () => {
   );
 };
 
-const Footer = () => {
+export const Footer = () => {
   const { t } = useTranslation();
   
   return (
@@ -1211,8 +1212,8 @@ const Footer = () => {
             <div>© {new Date().getFullYear()} {KYBERIT_DATA.name.toUpperCase()}. {t("footer.rights")}</div>
             <div>P.IVA: {KYBERIT_DATA.vat}</div>
             <div className="flex items-center gap-4">
-              <a href="https://www.iubenda.com/privacy-policy/85043270" className="iubenda-black iubenda-noiframe iubenda-embed hover:text-kyber-cyan transition-colors" title="Privacy Policy">Privacy Policy</a>
-              <a href="https://www.iubenda.com/privacy-policy/85043270/cookie-policy" className="iubenda-black iubenda-noiframe iubenda-embed hover:text-kyber-cyan transition-colors" title="Cookie Policy">Cookie Policy</a>
+              <Link to="/legal/privacy-policy" className="hover:text-kyber-cyan transition-colors" title="Privacy Policy">Privacy Policy</Link>
+              <Link to="/legal/cookie-policy" className="hover:text-kyber-cyan transition-colors" title="Cookie Policy">Cookie Policy</Link>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-kyber-cyan rounded-full"></div> ONLINE
@@ -1283,6 +1284,7 @@ export default function App() {
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-kyber-cyan">Inizializzazione...</div>}>
         <Routes>
           <Route path="/setup" element={<SetupPage />} />
+          <Route path="/legal/:slug" element={<LegalPage sanityConfig={dynamicSanityConfig} />} />
           <Route path="/" element={
             <div className="relative">
               <Navbar />
