@@ -7,6 +7,8 @@ import testimonial from './schemas/testimonial';
 import localeString from './schemas/localeString';
 import localeText from './schemas/localeText';
 import localeArrayString from './schemas/localeArrayString';
+import about from './schemas/about';
+import pricingTier from './schemas/pricingTier';
 
 export const createSanityConfig = (projectId?: string, dataset?: string) => defineConfig({
   name: 'default',
@@ -16,7 +18,7 @@ export const createSanityConfig = (projectId?: string, dataset?: string) => defi
   basePath: '/admin',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [settings, service, testimonial, localeString, localeText, localeArrayString],
+    types: [settings, about, service, pricingTier, testimonial, localeString, localeText, localeArrayString],
   },
 });
 

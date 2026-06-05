@@ -290,8 +290,32 @@ const Hero = () => {
   );
 };
 
-const About = () => {
-  const { t } = useTranslation();
+const About = ({ sanityConfig }: { sanityConfig?: any }) => {
+  const { t, i18n } = useTranslation();
+  const [sanityAbout, setSanityAbout] = useState<any>(null);
+
+  useEffect(() => {
+    if (!sanityConfig) return;
+    const lang = i18n.language.split('-')[0];
+    const client = getSanityClient(sanityConfig.projectId, sanityConfig.dataset);
+    client.fetch(`*[_type == "about"][0]{
+      "badge": coalesce(badge[$lang], badge.it),
+      "title": coalesce(title[$lang], title.it),
+      "pilotTitle": coalesce(pilotTitle[$lang], pilotTitle.it),
+      "pilotDesc": coalesce(pilotDesc[$lang], pilotDesc.it),
+      "founderTitle": coalesce(founderTitle[$lang], founderTitle.it),
+      "founderDesc": coalesce(founderDesc[$lang], founderDesc.it)
+    }`, { lang }).then(data => {
+      setSanityAbout(data);
+    }).catch(err => console.error("Sanity fetch error:", err));
+  }, [sanityConfig, i18n.language]);
+
+  const badge = sanityAbout?.badge || t("about.badge");
+  const title = sanityAbout?.title || t("about.title");
+  const pilotTitle = sanityAbout?.pilotTitle || t("about.pilotTitle");
+  const pilotDesc = sanityAbout?.pilotDesc || t("about.pilotDesc");
+  const founderTitle = sanityAbout?.founderTitle || t("about.founderTitle");
+  const founderDesc = sanityAbout?.founderDesc || t("about.founderDesc");
 
   return (
     <section id="chi-siamo" className="py-24 border-b border-white/5 relative overflow-hidden">
@@ -308,10 +332,10 @@ const About = () => {
         >
           <div className="text-left mb-4">
             <span className="text-[10px] text-gray-500 font-mono tracking-[0.4em] uppercase block mb-2">
-              {t("about.badge")}
+              {badge}
             </span>
             <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
-              {t("about.title")}
+              {title}
             </h2>
           </div>
         </motion.div>
@@ -332,12 +356,12 @@ const About = () => {
                   <Zap size={20} className="animate-pulse" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">
-                  {t("about.pilotTitle")}
+                  {pilotTitle}
                 </h3>
               </div>
               <p
                 className="text-gray-400 text-sm md:text-base leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: t("about.pilotDesc") }}
+                dangerouslySetInnerHTML={{ __html: pilotDesc }}
               />
             </div>
             <div className="mt-8 border-t border-white/5 pt-6 flex items-center gap-4 text-xs text-gray-500 font-mono">
@@ -361,12 +385,12 @@ const About = () => {
                   <ShieldCheck size={20} />
                 </div>
                 <h3 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">
-                  {t("about.founderTitle")}
+                  {founderTitle}
                 </h3>
               </div>
               <p 
                 className="text-gray-400 text-sm md:text-base leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: t("about.founderDesc") }}
+                dangerouslySetInnerHTML={{ __html: founderDesc }}
               />
             </div>
             <div className="mt-8 border-t border-white/5 pt-6 flex items-center gap-4 text-xs text-gray-500 font-mono">
@@ -380,35 +404,85 @@ const About = () => {
   );
 };
 
-const Pricing = () => {
-  const { t } = useTranslation();
+const getPricingStyle = (styleKey: string) => {
+  if (styleKey === 'blue') return {
+    glow: "border-kyber-blue/30 bg-kyber-blue/[0.01] hover:border-kyber-blue/60 hover:shadow-[0_0_30px_rgba(0,102,255,0.1)]",
+    borderColor: "border-kyber-blue/20",
+    badgeColor: "bg-kyber-blue/15 text-kyber-cyan",
+    buttonStyle: "bg-kyber-blue text-white hover:bg-kyber-blue/80 hover:shadow-[0_0_15px_rgba(0,102,255,0.3)] border-transparent"
+  };
+  if (styleKey === 'gold') return {
+    glow: "hover:border-amber-400/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.05)]",
+    borderColor: "border-white/5",
+    badgeColor: "bg-white/5 text-gray-400",
+    buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+  };
+  return {
+    glow: "hover:border-kyber-cyan/40 hover:shadow-[0_0_30px_rgba(0,242,255,0.05)]",
+    borderColor: "border-white/5",
+    badgeColor: "bg-white/5 text-gray-400",
+    buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+  };
+};
 
-  const tiers = [
+const getPricingIcon = (iconName: string) => {
+  if (iconName === 'Shield') return <Shield className="text-kyber-blue" size={24} />;
+  if (iconName === 'Crown') return <Crown className="text-amber-400" size={24} />;
+  return <Target className="text-kyber-cyan" size={24} />;
+};
+
+const Pricing = ({ sanityConfig }: { sanityConfig?: any }) => {
+  const { t, i18n } = useTranslation();
+  const [sanityTiers, setSanityTiers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!sanityConfig) return;
+    const lang = i18n.language.split('-')[0];
+    const client = getSanityClient(sanityConfig.projectId, sanityConfig.dataset);
+    client.fetch(`*[_type == "pricingTier"] | order(order asc) {
+      "subtitle": coalesce(subtitle[$lang], subtitle.it),
+      "title": coalesce(title[$lang], title.it),
+      "price": coalesce(price[$lang], price.it),
+      "period": coalesce(period[$lang], period.it),
+      "features": coalesce(features[$lang], features.it),
+      icon,
+      styleKey
+    }`, { lang }).then(data => {
+      setSanityTiers(data);
+    }).catch(err => console.error("Sanity fetch error:", err));
+  }, [sanityConfig, i18n.language]);
+
+  const fallbackTiers = [
     {
-      key: "oneShot",
-      icon: <Target className="text-kyber-cyan" size={24} />,
-      glow: "hover:border-kyber-cyan/40 hover:shadow-[0_0_30px_rgba(0,242,255,0.05)]",
-      borderColor: "border-white/5",
-      badgeColor: "bg-white/5 text-gray-400",
-      buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+      subtitle: t("pricing.oneShot.subtitle"),
+      title: t("pricing.oneShot.title"),
+      price: t("pricing.oneShot.price"),
+      period: t("pricing.oneShot.period"),
+      features: t("pricing.oneShot.features", { returnObjects: true }) as string[],
+      icon: "Target",
+      styleKey: "default"
     },
     {
-      key: "shield",
-      icon: <Shield className="text-kyber-blue" size={24} />,
-      glow: "border-kyber-blue/30 bg-kyber-blue/[0.01] hover:border-kyber-blue/60 hover:shadow-[0_0_30px_rgba(0,102,255,0.1)]",
-      borderColor: "border-kyber-blue/20",
-      badgeColor: "bg-kyber-blue/15 text-kyber-cyan",
-      buttonStyle: "bg-kyber-blue text-white hover:bg-kyber-blue/80 hover:shadow-[0_0_15px_rgba(0,102,255,0.3)] border-transparent"
+      subtitle: t("pricing.shield.subtitle"),
+      title: t("pricing.shield.title"),
+      price: t("pricing.shield.price"),
+      period: t("pricing.shield.period"),
+      features: t("pricing.shield.features", { returnObjects: true }) as string[],
+      icon: "Shield",
+      styleKey: "blue"
     },
     {
-      key: "enterprise",
-      icon: <Crown className="text-amber-400" size={24} />,
-      glow: "hover:border-amber-400/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.05)]",
-      borderColor: "border-white/5",
-      badgeColor: "bg-white/5 text-gray-400",
-      buttonStyle: "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white"
+      subtitle: t("pricing.enterprise.subtitle"),
+      title: t("pricing.enterprise.title"),
+      price: t("pricing.enterprise.price"),
+      period: t("pricing.enterprise.period"),
+      features: t("pricing.enterprise.features", { returnObjects: true }) as string[],
+      icon: "Crown",
+      styleKey: "gold"
     }
   ];
+
+  const tiers = sanityTiers.length > 0 ? sanityTiers : fallbackTiers;
 
   return (
     <section id="listino" className="py-24 border-b border-white/5 relative overflow-hidden">
@@ -433,7 +507,9 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {tiers.map((tier, idx) => {
-            const features = t(`pricing.${tier.key}.features`, { returnObjects: true }) as string[];
+            const style = getPricingStyle(tier.styleKey || 'default');
+            const icon = getPricingIcon(tier.icon || 'Target');
+            const features = tier.features || [];
 
             return (
               <motion.div
@@ -442,35 +518,35 @@ const Pricing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: idx * 0.15 }}
-                className={`cyber-panel rounded-[2.5rem] p-8 relative overflow-hidden flex flex-col justify-between border ${tier.borderColor} ${tier.glow} group`}
+                className={`cyber-panel rounded-[2.5rem] p-8 relative overflow-hidden flex flex-col justify-between border ${style.borderColor} ${style.glow} group`}
               >
                 <div className="scan-line" />
 
                 <div>
                   <div className="flex justify-between items-center mb-6">
-                    <span className={`text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full font-semibold ${tier.badgeColor}`}>
-                      {t(`pricing.${tier.key}.subtitle`)}
+                    <span className={`text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full font-semibold ${style.badgeColor}`}>
+                      {tier.subtitle}
                     </span>
                     <div className="p-3 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
-                      {tier.icon}
+                      {icon}
                     </div>
                   </div>
 
                   <h3 className="text-2xl font-black tracking-tight text-white mb-2 uppercase italic">
-                    {t(`pricing.${tier.key}.title`)}
+                    {tier.title}
                   </h3>
 
                   <div className="mb-8 flex items-baseline gap-1">
                     <span className="text-4xl font-black text-white tracking-tighter neon-text">
-                      {t(`pricing.${tier.key}.price`)}
+                      {tier.price}
                     </span>
                     <span className="text-sm text-gray-500 font-mono font-medium">
-                      {t(`pricing.${tier.key}.period`)}
+                      {tier.period}
                     </span>
                   </div>
 
                   <ul className="space-y-4 mb-10 border-t border-white/5 pt-6">
-                    {Array.isArray(features) && features.map((feature, i) => (
+                    {Array.isArray(features) && features.map((feature: string, i: number) => (
                       <li key={i} className="text-gray-400 text-sm flex items-start gap-3 leading-relaxed">
                         <span className="text-kyber-cyan mt-1 text-xs">▪</span>
                         <span>{feature}</span>
@@ -479,10 +555,7 @@ const Pricing = () => {
                   </ul>
                 </div>
 
-                <a
-                  href="#contatti"
-                  className={`w-full text-center py-4 rounded-2xl font-bold text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${tier.buttonStyle}`}
-                >
+                <a href="#contatti" className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm text-center transition-all duration-300 border ${style.buttonStyle} flex items-center justify-center gap-2 group-hover:bg-white/10`}>
                   {t("pricing.button")}
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
                 </a>
@@ -1638,10 +1711,10 @@ export default function App() {
             <div className="relative">
               <Navbar />
               <Hero />
-              <About />
+              <About sanityConfig={dynamicSanityConfig} />
               <Services sanityConfig={dynamicSanityConfig} />
               <Process />
-              <Pricing />
+              <Pricing sanityConfig={dynamicSanityConfig} />
 
               <Testimonials sanityConfig={dynamicSanityConfig} />
               <ContactForm />
@@ -1653,10 +1726,10 @@ export default function App() {
             <div className="relative">
               <Navbar />
               <Hero />
-              <About />
+              <About sanityConfig={dynamicSanityConfig} />
               <Services sanityConfig={dynamicSanityConfig} />
               <Process />
-              <Pricing />
+              <Pricing sanityConfig={dynamicSanityConfig} />
 
               <Testimonials sanityConfig={dynamicSanityConfig} />
               <ContactForm />
