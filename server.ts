@@ -8,12 +8,31 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import cors from "cors";
 import fs from "fs";
+import { OAuth2Client } from "google-auth-library";
+import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from "@simplewebauthn/server";
+import jwt from "jsonwebtoken";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 const CONFIG_PATH = path.join(DATA_DIR, "config.json");
+
+const GOOGLE_CLIENT_ID = "588707402683-1v3gn52fnsnlisgo8e50eo1bpmqp521n.apps.googleusercontent.com";
+const AUTHORIZED_EMAIL = "info@kyberit.tech";
+const JWT_SECRET = process.env.JWT_SECRET || "super-secret-kyberit-jwt-key-2026";
+const RP_ID = process.env.NODE_ENV === "production" ? "kyberit.tech" : "localhost";
+const RP_NAME = "Kyberit AI Studio";
+const expectedOrigin = process.env.NODE_ENV === "production" ? ["https://kyberit.tech", "https://www.kyberit.tech"] : ["http://localhost:3000", "http://localhost:5173"];
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+interface PasskeyDevice {
+  credentialID: string;
+  credentialPublicKey: string;
+  counter: number;
+  transports?: string[];
+}
 
 interface DiagnosticReport {
   id: string;
@@ -49,6 +68,8 @@ interface SiteConfig {
     secretKey: string;
   };
   diagnostics: DiagnosticReport[];
+  passkeys: PasskeyDevice[];
+  currentChallenge?: string;
 }
 
 const getConfig = (): SiteConfig => {
@@ -57,7 +78,8 @@ const getConfig = (): SiteConfig => {
     sanity: { projectId: "", dataset: "production", organizationId: "" },
     iubenda: { siteId: "", policyId: "" },
     turnstile: { siteKey: "", secretKey: "" },
-    diagnostics: []
+    diagnostics: [],
+    passkeys: []
   };
 
   if (fs.existsSync(CONFIG_PATH)) {
@@ -68,7 +90,9 @@ const getConfig = (): SiteConfig => {
         sanity: { ...defaults.sanity, ...saved.sanity },
         iubenda: { ...defaults.iubenda, ...saved.iubenda },
         turnstile: { ...defaults.turnstile, ...saved.turnstile },
-        diagnostics: saved.diagnostics || defaults.diagnostics
+        diagnostics: saved.diagnostics || defaults.diagnostics,
+        passkeys: saved.passkeys || [],
+        currentChallenge: saved.currentChallenge
       };
     } catch (e) {
       console.error("Errore lettura config.json", e);
@@ -86,7 +110,6 @@ const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const SETUP_PASSWORD = process.env.SETUP_PASSWORD || "Kyberit@2026";
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
 
 async function verifyTurnstile(token: string) {
@@ -166,15 +189,148 @@ async function startServer() {
     message: { error: "Troppe richieste. Riprova tra un'ora." }
   });
 
-  // Middleware to check setup password
+  // Middleware to check auth via JWT
   const checkAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const authHeader = req.headers.authorization;
-    if (authHeader === SETUP_PASSWORD) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+      if (decoded.email !== AUTHORIZED_EMAIL) throw new Error("Invalid email");
       next();
-    } else {
+    } catch (e) {
       res.status(401).json({ error: "Unauthorized" });
     }
   };
+
+  // Google SSO Auth
+  app.post("/api/auth/google", authLimiter, async (req, res) => {
+    try {
+      const { credential } = req.body;
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || payload.email !== AUTHORIZED_EMAIL) {
+        return res.status(403).json({ error: "Email non autorizzata." });
+      }
+      const token = jwt.sign({ email: payload.email }, JWT_SECRET, { expiresIn: "24h" });
+      res.json({ success: true, token });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: "Login fallito." });
+    }
+  });
+
+  // WebAuthn Passkeys Endpoints
+  app.get("/api/webauthn/generate-authentication-options", authLimiter, async (req, res) => {
+    const config = getConfig();
+    if (config.passkeys.length === 0) {
+      return res.status(400).json({ error: "Nessuna passkey registrata." });
+    }
+    const options = await generateAuthenticationOptions({
+      rpID: RP_ID,
+      allowCredentials: config.passkeys.map(dev => ({
+        id: dev.credentialID,
+        type: 'public-key',
+        transports: dev.transports as any,
+      })),
+      userVerification: 'preferred',
+    });
+    config.currentChallenge = options.challenge;
+    saveConfig(config);
+    res.json(options);
+  });
+
+  app.post("/api/webauthn/verify-authentication", authLimiter, async (req, res) => {
+    const body = req.body;
+    const config = getConfig();
+    if (!config.currentChallenge) return res.status(400).json({ error: "Sfida non trovata" });
+    const authenticator = config.passkeys.find(p => p.credentialID === body.id);
+    if (!authenticator) return res.status(400).json({ error: "Passkey non trovata" });
+    
+    try {
+      const verification = await verifyAuthenticationResponse({
+        response: body,
+        expectedChallenge: config.currentChallenge,
+        expectedOrigin,
+        expectedRPID: RP_ID,
+        credential: {
+          id: authenticator.credentialID,
+          publicKey: new Uint8Array(Buffer.from(authenticator.credentialPublicKey, 'base64')),
+          counter: authenticator.counter,
+          transports: authenticator.transports as any,
+        }
+      });
+      if (verification.verified) {
+        config.currentChallenge = undefined;
+        authenticator.counter = verification.authenticationInfo.newCounter;
+        saveConfig(config);
+        const token = jwt.sign({ email: AUTHORIZED_EMAIL }, JWT_SECRET, { expiresIn: "24h" });
+        return res.json({ verified: true, token });
+      }
+    } catch (err: any) {
+      console.error(err);
+      return res.status(400).json({ error: err.message });
+    }
+    return res.status(400).json({ error: "Verifica fallita" });
+  });
+
+  app.get("/api/webauthn/generate-registration-options", checkAuth, async (req, res) => {
+    const config = getConfig();
+    const options = await generateRegistrationOptions({
+      rpName: RP_NAME,
+      rpID: RP_ID,
+      userID: Buffer.from(AUTHORIZED_EMAIL),
+      userName: AUTHORIZED_EMAIL,
+      attestationType: 'none',
+      excludeCredentials: config.passkeys.map(dev => ({
+        id: dev.credentialID,
+        type: 'public-key',
+        transports: dev.transports as any,
+      })),
+      authenticatorSelection: {
+        residentKey: 'preferred',
+        userVerification: 'preferred',
+      }
+    });
+    config.currentChallenge = options.challenge;
+    saveConfig(config);
+    res.json(options);
+  });
+
+  app.post("/api/webauthn/verify-registration", checkAuth, async (req, res) => {
+    const body = req.body;
+    const config = getConfig();
+    if (!config.currentChallenge) return res.status(400).json({ error: "Sfida non trovata" });
+    try {
+      const verification = await verifyRegistrationResponse({
+        response: body,
+        expectedChallenge: config.currentChallenge,
+        expectedOrigin,
+        expectedRPID: RP_ID,
+      });
+      if (verification.verified && verification.registrationInfo) {
+        const newDevice: PasskeyDevice = {
+          credentialID: verification.registrationInfo.credential.id,
+          credentialPublicKey: Buffer.from(verification.registrationInfo.credential.publicKey).toString('base64'),
+          counter: verification.registrationInfo.credential.counter,
+          transports: body.response.transports,
+        };
+        config.passkeys.push(newDevice);
+        config.currentChallenge = undefined;
+        saveConfig(config);
+        return res.json({ verified: true });
+      }
+    } catch (err: any) {
+      console.error(err);
+      return res.status(400).json({ error: err.message });
+    }
+    return res.status(400).json({ error: "Registrazione fallita" });
+  });
 
   // API Route to get public config (Sanity, Iubenda, Turnstile keys)
   app.get("/api/config/public", (req, res) => {
