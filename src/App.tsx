@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, FormEvent, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { GoogleGenAI, Type } from "@google/genai";
+import CookieBanner from "./CookieBanner";
+import AccessibilityWidget from "./AccessibilityWidget";
 import SetupPage from "./SetupPage";
 import LegalPage from "./LegalPage";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -1281,6 +1283,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <CookieBanner />
+      <AccessibilityWidget />
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-kyber-cyan">Inizializzazione...</div>}>
         <Routes>
           <Route path="/setup" element={<SetupPage />} />

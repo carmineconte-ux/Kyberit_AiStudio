@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=OpenDyslexic&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -74,3 +75,24 @@
   opacity: 0.25;
 }
 
+/* Accessibility Classes */
+html.a11y-large-text {
+  font-size: 110%;
+}
+html.a11y-high-contrast {
+  filter: contrast(125%) saturate(120%);
+}
+html.a11y-grayscale {
+  filter: grayscale(100%);
+}
+html.a11y-stop-animations * {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html.a11y-dyslexic {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
+html.a11y-dyslexic * {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
