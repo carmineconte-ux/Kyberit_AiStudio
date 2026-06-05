@@ -352,7 +352,9 @@ async function startServer() {
 
   // API Route to save config
   app.post("/api/config", authLimiter, checkAuth, (req, res) => {
-    saveConfig(req.body);
+    const currentConfig = getConfig();
+    const newConfig = req.body;
+    saveConfig({ ...currentConfig, ...newConfig });
     res.json({ success: true });
   });
 
