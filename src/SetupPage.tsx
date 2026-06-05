@@ -12,7 +12,6 @@ const SetupPageContent = () => {
   const [config, setConfig] = useState({
     smtp: { host: "", port: 587, user: "", pass: "", from: "", contactEmail: "" },
     sanity: { projectId: "", dataset: "production", organizationId: "" },
-    iubenda: { siteId: "", policyId: "" },
     turnstile: { siteKey: "", secretKey: "" },
     diagnostics: [] as any[]
   });
@@ -28,7 +27,6 @@ const SetupPageContent = () => {
       setConfig(prev => ({
         smtp: { ...prev.smtp, ...data.smtp },
         sanity: { ...prev.sanity, ...data.sanity },
-        iubenda: { ...prev.iubenda, ...data.iubenda },
         turnstile: { ...prev.turnstile, ...data.turnstile },
         diagnostics: data.diagnostics || []
       }));
@@ -277,21 +275,6 @@ const SetupPageContent = () => {
                     <input type="text" value={config.sanity.dataset} onChange={e => setConfig({...config, sanity: {...config.sanity, dataset: e.target.value}})} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-kyber-cyan outline-none transition-colors" placeholder="es. production" />
                   </div>
                 </div>
-
-                <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-6 mt-8">
-                  <ShieldCheck className="text-kyber-cyan" />
-                  Iubenda (Privacy)</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Site ID</label>
-                    <input type="text" value={config.iubenda.siteId} onChange={e => setConfig({...config, iubenda: {...config.iubenda, siteId: e.target.value}})} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-kyber-cyan outline-none transition-colors" placeholder="es. 4492368" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Policy ID</label>
-                    <input type="text" value={config.iubenda.policyId} onChange={e => setConfig({...config, iubenda: {...config.iubenda, policyId: e.target.value}})} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-kyber-cyan outline-none transition-colors" placeholder="es. 85043270" />
-                  </div>
-                </div>
-
                 <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-6 mt-8">
                   <Shield className="text-kyber-cyan" />
                   Cloudflare Turnstile</h2>

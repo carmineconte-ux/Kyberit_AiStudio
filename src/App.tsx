@@ -1247,72 +1247,9 @@ export default function App() {
       .then(res => res.json())
       .then(data => {
         setSiteConfig(data);
-        
-        // Iubenda Script Injection
-        if (data.iubenda?.siteId) {
-          const siteId = data.iubenda.siteId;
-          const policyId = data.iubenda.policyId || "";
-          const langCode = i18n.language.split('-')[0];
-          
-          // Clean up existing Iubenda elements
-          ['iubenda-config', 'iubenda-script', 'iubenda-embed-script', 'iubenda-widget-script'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-          });
-
-          // 1. Configuration Object (Must be global and set before the CS script)
-          const configScript = document.createElement('script');
-          configScript.id = 'iubenda-config';
-          configScript.type = 'text/javascript';
-          configScript.innerHTML = `
-            window._iub = window._iub || [];
-            _iub.csConfiguration = {
-              "askConsentAtCookiePolicyUpdate": true,
-              "floatingPullLeft": true,
-              "perPage": true,
-              "invalidateConsent": true,
-              "siteId": ${siteId},
-              "whitelabel": false,
-              "cookiePolicyId": "${policyId}",
-              "lang": "${langCode}",
-              "banner": {
-                "acceptButtonDisplay": true,
-                "customizeButtonDisplay": true,
-                "position": "float-bottom-right",
-                "rejectButtonDisplay": true,
-                "backgroundOverlay": true
-              }
-            };
-          `;
-          document.head.appendChild(configScript);
-
-          // 2. Cookie Solution Script
-          const mainScript = document.createElement('script');
-          mainScript.id = 'iubenda-script';
-          mainScript.type = 'text/javascript';
-          mainScript.src = 'https://cdn.iubenda.com/cs/iubenda_cs.js';
-          mainScript.charset = 'UTF-8';
-          mainScript.async = true;
-          document.head.appendChild(mainScript);
-
-          // 3. Privacy/Cookie Policy Embed Script (for the links in footer)
-          const embedScript = document.createElement('script');
-          embedScript.id = 'iubenda-embed-script';
-          embedScript.type = 'text/javascript';
-          embedScript.innerHTML = `(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);`;
-          document.head.appendChild(embedScript);
-
-          // 4. Widget Script
-          const widgetScript = document.createElement('script');
-          widgetScript.id = 'iubenda-widget-script';
-          widgetScript.type = 'text/javascript';
-          widgetScript.src = 'https://embeds.iubenda.com/widgets/12e4f23d-3706-4032-bcf3-157361aac4fd.js';
-          widgetScript.async = true;
-          document.head.appendChild(widgetScript);
-        }
       })
       .catch(err => console.error("Error fetching public config:", err));
-  }, [i18n.language]);
+  }, []);
 
   const dynamicSanityConfig = siteConfig?.sanity?.projectId 
     ? createSanityConfig(siteConfig.sanity.projectId, siteConfig.sanity.dataset)

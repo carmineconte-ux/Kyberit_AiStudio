@@ -59,10 +59,6 @@ interface SiteConfig {
     dataset: string;
     organizationId?: string;
   };
-  iubenda: {
-    siteId: string;
-    policyId: string;
-  };
   turnstile: {
     siteKey: string;
     secretKey: string;
@@ -76,7 +72,6 @@ const getConfig = (): SiteConfig => {
   const defaults: SiteConfig = {
     smtp: { host: "", port: 587, user: "", pass: "", from: "", contactEmail: "" },
     sanity: { projectId: "", dataset: "production", organizationId: "" },
-    iubenda: { siteId: "", policyId: "" },
     turnstile: { siteKey: "", secretKey: "" },
     diagnostics: [],
     passkeys: []
@@ -88,7 +83,6 @@ const getConfig = (): SiteConfig => {
       return {
         smtp: { ...defaults.smtp, ...saved.smtp },
         sanity: { ...defaults.sanity, ...saved.sanity },
-        iubenda: { ...defaults.iubenda, ...saved.iubenda },
         turnstile: { ...defaults.turnstile, ...saved.turnstile },
         diagnostics: saved.diagnostics || defaults.diagnostics,
         passkeys: saved.passkeys || [],
@@ -336,11 +330,7 @@ async function startServer() {
   app.get("/api/config/public", (req, res) => {
     const config = getConfig();
     res.json({
-      sanity: config.sanity,
-      iubenda: { 
-        siteId: config.iubenda.siteId,
-        policyId: config.iubenda.policyId 
-      },
+      sanity: { projectId: config.sanity.projectId, dataset: config.sanity.dataset },
       turnstile: { siteKey: config.turnstile.siteKey }
     });
   });

@@ -9,6 +9,7 @@ import localeText from './schemas/localeText';
 import localeArrayString from './schemas/localeArrayString';
 import about from './schemas/about';
 import pricingTier from './schemas/pricingTier';
+import legal from './schemas/legal';
 
 export const createSanityConfig = (projectId?: string, dataset?: string) => defineConfig({
   name: 'default',
@@ -18,7 +19,7 @@ export const createSanityConfig = (projectId?: string, dataset?: string) => defi
   basePath: '/admin',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [settings, about, service, pricingTier, testimonial, localeString, localeText, localeArrayString],
+    types: [settings, about, service, pricingTier, testimonial, localeString, localeText, localeArrayString, legal],
   },
 });
 
