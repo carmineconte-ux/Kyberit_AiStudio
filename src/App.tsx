@@ -79,7 +79,6 @@ const Navbar = () => {
     { name: t("nav.services"), href: "#servizi" },
     { name: t("nav.process"), href: "#processo" },
     { name: t("nav.pricing"), href: "#listino" },
-    { name: t("nav.diagnostics"), href: "#diagnostica" },
     { name: t("nav.contact"), href: "#contatti" },
   ];
 
@@ -112,7 +111,7 @@ const Navbar = () => {
           </div>
 
           <a 
-            href="#diagnostica"
+            href="#contatti"
             className="bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-kyber-cyan hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5"
           >
             {t("nav.freeAnalysis")}
@@ -146,7 +145,7 @@ const Navbar = () => {
             </a>
           ))}
           <a 
-            href="#diagnostica"
+            href="#contatti"
             onClick={() => setMobileMenuOpen(false)}
             className="bg-kyber-cyan text-black px-12 py-5 rounded-full text-sm font-black"
           >
@@ -206,7 +205,7 @@ const Hero = () => {
           
           <div className="flex flex-wrap gap-4 mb-16">
             <a 
-              href="#diagnostica"
+              href="#contatti"
               className="bg-kyber-cyan text-black px-8 py-4 rounded-full font-bold text-sm flex items-center gap-3 hover:shadow-lg hover:shadow-kyber-cyan/20 transition-all group"
             >
               {t("hero.btnDiagnostics")} <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -789,328 +788,7 @@ const TurnstileWidget = ({ onVerify, siteKey }: { onVerify: (token: string) => v
   );
 };
 
-const Diagnostic = () => {
-  const { t, i18n } = useTranslation();
-  const [url, setUrl] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(0);
-  const [report, setReport] = useState<DiagnosticReport | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [publicConfig, setPublicConfig] = useState<any>(null);
 
-  useEffect(() => {
-    fetch("/api/config/public")
-      .then(res => res.json())
-      .then(data => setPublicConfig(data))
-      .catch(err => console.error("Error fetching public config:", err));
-  }, []);
-
-  const steps = [
-    t("diagnostic.loading.analyzing"),
-    t("diagnostic.loading.performance"),
-    t("diagnostic.loading.security"),
-    t("diagnostic.loading.seo"),
-    t("diagnostic.loading.generating")
-  ];
-
-  useEffect(() => {
-    if (loading && step < steps.length - 1) {
-      const timer = setTimeout(() => {
-        setStep(prev => prev + 1);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, step]);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!url || !email) return;
-
-    // Normalize URL
-    let normalizedUrl = url.trim();
-    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
-      normalizedUrl = "https://" + normalizedUrl;
-    }
-
-    setLoading(true);
-    setStep(0);
-    setReport(null);
-
-    if (!turnstileToken && publicConfig?.turnstile?.siteKey) {
-      alert("Per favore completa la verifica di sicurezza.");
-      setLoading(false);
-      return;
-    }
-
-    const langMap: Record<string, string> = {
-      it: "italiano",
-      en: "inglese",
-      de: "tedesco",
-      fr: "francese"
-    };
-    const currentLangName = langMap[i18n.language] || "italiano";
-
-    try {
-    const response = await fetch("/api/gemini-proxy", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    model: "gemini-2.0-flash",
-    contents: [{ parts: [{ text: `Analizza l'URL: ${normalizedUrl}` }] }],
-    config: {
-      systemInstruction: `Sei un esperto senior di cybersicurezza e performance web di Kyberit. Genera report diagnostici tecnici, precisi e professionali in ${currentLangName}. Evita ripetizioni, sii conciso e non aggiungere testo inutile alla fine del report. Il riepilogo (summary) deve essere un paragrafo di massimo 300 caratteri.`,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER, description: "Punteggio globale da 0 a 100" },
-          status: { type: Type.STRING, description: "Stato: Ottimale, Attenzione o Critico" },
-          sections: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING, description: "Titolo della sezione (es. Sicurezza, Performance)" },
-                score: { type: Type.NUMBER, description: "Punteggio della sezione" },
-                findings: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Elenco dei risultati tecnici" }
-              }
-            }
-          },
-          recommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Azioni correttive suggerite" },
-          summary: { type: Type.STRING, description: "Riepilogo esecutivo conciso" }
-        },
-        required: ["score", "status", "sections", "recommendations", "summary"]
-      }
-    }
-  })
-});
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Errore durante la chiamata al proxy Gemini.");
-      }
-
-      const data = await response.json();
-      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!resultText) {
-        throw new Error("Il modello non ha restituito alcun testo.");
-      }
-      const result = JSON.parse(resultText);
-      
-      // Save diagnostic and send emails
-      try {
-        await fetch("/api/diagnostic/save", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url: normalizedUrl,
-            email,
-            report: result,
-            lang: i18n.language,
-            turnstileToken
-          })
-        });
-      } catch (e) {
-        console.error("Error saving diagnostic:", e);
-      }
-
-      // Aspettiamo che l'animazione dei passi finisca prima di mostrare il report
-      setTimeout(() => {
-        setReport(result);
-        setLoading(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Errore durante la diagnostica:", error);
-      setLoading(false);
-    }
-  };
-
-  return (
-    <section id="diagnostica" className="py-24 bg-black relative">
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <div className="inline-block p-4 glass-panel rounded-full mb-8">
-          <Search className="text-kyber-cyan" size={32} />
-        </div>
-        <div className="text-kyber-cyan font-mono text-sm mb-2">{t("diagnostic.badge")}</div>
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">{t("diagnostic.title")}</h2>
-        <p className="text-gray-400 mb-12">
-          {t("diagnostic.desc")}
-        </p>
-
-        {!loading && !report && (
-          <motion.form 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            onSubmit={handleSubmit} 
-            className="glass-panel p-10 rounded-3xl max-w-5xl mx-auto shadow-2xl shadow-kyber-cyan/5 border border-white/5 relative group"
-          >
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-kyber-cyan/20 to-kyber-blue/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            
-            <div className="relative z-10 flex flex-col gap-6">
-              <div className="grid md:grid-cols-[1fr_1fr_auto] gap-6 items-end">
-                <div className="text-left">
-                  <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-3 font-mono font-bold">{t("diagnostic.form.urlLabel")}</label>
-                  <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 focus-within:border-kyber-cyan focus-within:bg-white/10 transition-all duration-300">
-                    <span className="text-gray-500 text-sm font-mono select-none mr-1">https://</span>
-                    <input 
-                      type="text" 
-                      placeholder={t("diagnostic.form.urlPlaceholder")} 
-                      value={url}
-                      onChange={(e) => {
-                        let val = e.target.value;
-                        val = val.replace(/^https?:\/\//, "");
-                        setUrl(val);
-                      }}
-                      required
-                      className="flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-gray-600"
-                    />
-                  </div>
-                </div>
-                
-                <div className="text-left">
-                  <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-3 font-mono font-bold">{t("diagnostic.form.emailLabel")}</label>
-                  <input 
-                    type="email" 
-                    placeholder={t("diagnostic.form.emailPlaceholder")} 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-sm focus:border-kyber-cyan focus:bg-white/10 outline-none transition-all duration-300 placeholder:text-gray-600"
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full md:w-auto bg-white text-black px-10 py-4 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-kyber-cyan hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5 h-[54px]"
-                >
-                  {t("diagnostic.form.btn")}
-                </button>
-              </div>
-
-              {publicConfig?.turnstile?.siteKey && (
-                <div className="flex justify-center border-t border-white/5 pt-4">
-                  <TurnstileWidget 
-                    siteKey={publicConfig.turnstile.siteKey} 
-                    onVerify={(token) => setTurnstileToken(token)} 
-                  />
-                </div>
-              )}
-            </div>
-          </motion.form>
-        )}
-
-        {loading && !report && (
-          <div className="glass-panel p-12 rounded-2xl">
-            <div className="flex flex-col items-center gap-8">
-              <div className="relative w-24 h-24">
-                <div className="absolute inset-0 border-4 border-kyber-cyan/20 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-kyber-cyan rounded-full border-t-transparent animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center text-kyber-cyan">
-                  <Activity size={32} />
-                </div>
-              </div>
-              
-              <div className="space-y-4 w-full max-w-md">
-                <div className="text-kyber-cyan font-mono text-sm animate-pulse">
-                  {steps[step]}
-                </div>
-                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-kyber-cyan"
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${((step + 1) / steps.length) * 100}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] uppercase tracking-widest text-gray-500 font-mono">
-                  <span>Status: {t("diagnostic.loading.status")}</span>
-                  <span>{Math.round(((step + 1) / steps.length) * 100)}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {report && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glass-panel p-8 rounded-2xl text-left"
-          >
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-8 border-b border-white/10">
-              <div>
-                <h3 className="text-2xl font-bold mb-2">{t("diagnostic.report.title")}: {url}</h3>
-                <p className="text-gray-400 text-sm">{t("diagnostic.report.completed")} {new Date().toLocaleDateString()}</p>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <div className={`text-3xl font-bold ${report.score > 80 ? 'text-green-400' : report.score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {report.score}/100
-                  </div>
-                  <div className="text-[10px] uppercase tracking-widest text-gray-500">Global Score</div>
-                </div>
-                <div className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                  report.status === 'Ottimale' || report.status === 'Optimal' || report.status === 'Optimal' || report.status === 'Optimal' ? 'bg-green-400/10 border-green-400/20 text-green-400' :
-                  report.status === 'Attenzione' || report.status === 'Attention' || report.status === 'Warnung' || report.status === 'Attention' ? 'bg-yellow-400/10 border-yellow-400/20 text-yellow-400' :
-                  'bg-red-400/10 border-red-400/20 text-red-400'
-                }`}>
-                  {report.status}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 mb-10">
-              {report.sections?.map((section, i) => (
-                <div key={i} className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-sm uppercase tracking-widest text-gray-300">{section.title}</h4>
-                    <span className={`text-xs font-mono ${section.score > 80 ? 'text-green-400' : 'text-yellow-400'}`}>{section.score}%</span>
-                  </div>
-                  <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className={`h-full ${section.score > 80 ? 'bg-green-400' : 'bg-yellow-400'}`} style={{ width: `${section.score}%` }}></div>
-                  </div>
-                  <ul className="space-y-2">
-                    {section.findings?.map((finding, j) => (
-                      <li key={j} className="text-xs text-gray-400 flex gap-2">
-                        <span className="text-kyber-cyan">•</span> {finding}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white/5 p-6 rounded-xl border border-white/10 mb-10">
-              <h4 className="font-bold text-sm uppercase tracking-widest text-kyber-cyan mb-4">{t("diagnostic.report.recommendations")}</h4>
-              <ul className="space-y-3">
-                {report.recommendations?.map((rec, i) => (
-                  <li key={i} className="text-sm text-gray-300 flex gap-3">
-                    <CheckCircle2 size={16} className="text-kyber-cyan shrink-0 mt-0.5" />
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-              <p className="text-xs text-gray-500 italic max-w-md">
-                {report.summary}
-              </p>
-              <button 
-                onClick={() => setReport(null)}
-                className="bg-white text-black px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-kyber-cyan transition-colors"
-              >
-                {t("diagnostic.report.newAnalysis")}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </section>
-  );
-};
 
 const Testimonials = () => {
   const { t } = useTranslation();
@@ -1893,7 +1571,7 @@ export default function App() {
               <Services />
               <Process />
               <Pricing />
-              <Diagnostic />
+
               <Testimonials />
               <ContactForm />
               <Footer />
@@ -1908,7 +1586,7 @@ export default function App() {
               <Services />
               <Process />
               <Pricing />
-              <Diagnostic />
+
               <Testimonials />
               <ContactForm />
               <Footer />
