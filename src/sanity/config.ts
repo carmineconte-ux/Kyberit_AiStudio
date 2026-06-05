@@ -4,6 +4,8 @@ import { visionTool } from '@sanity/vision';
 import settings from './schemas/settings';
 import service from './schemas/service';
 import testimonial from './schemas/testimonial';
+import localeString from './schemas/localeString';
+import localeText from './schemas/localeText';
 
 export const createSanityConfig = (projectId?: string, dataset?: string) => defineConfig({
   name: 'default',
@@ -13,7 +15,7 @@ export const createSanityConfig = (projectId?: string, dataset?: string) => defi
   basePath: '/admin',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [settings, service, testimonial],
+    types: [settings, service, testimonial, localeString, localeText],
   },
 });
 

@@ -793,7 +793,7 @@ const TurnstileWidget = ({ onVerify, siteKey }: { onVerify: (token: string) => v
 import { getSanityClient } from "./sanity/client";
 
 const Testimonials = ({ sanityConfig }: { sanityConfig?: any }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [sanityReviews, setSanityReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -806,21 +806,23 @@ const Testimonials = ({ sanityConfig }: { sanityConfig?: any }) => {
       return;
     }
     
+    const lang = i18n.language.split('-')[0];
+
     const client = getSanityClient(projectId, dataset);
     client.fetch(`*[_type == "testimonial"]{
       name,
-      role,
-      quote,
+      "role": coalesce(role[$lang], role.it),
+      "quote": coalesce(quote[$lang], quote.it),
       rating,
       "avatarUrl": avatar.asset->url
-    }`).then((data: any[]) => {
+    }`, { lang }).then((data: any[]) => {
       setSanityReviews(data);
       setLoading(false);
     }).catch((err: any) => {
       console.error("Sanity fetch error:", err);
       setLoading(false);
     });
-  }, [sanityConfig]);
+  }, [sanityConfig, i18n.language]);
 
   const fallbackReviews = t("testimonials.items", { returnObjects: true }) as { name: string, role: string, quote: string, rating?: number }[];
   

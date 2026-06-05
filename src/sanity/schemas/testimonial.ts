@@ -11,12 +11,12 @@ export default {
     {
       name: 'role',
       title: 'Ruolo / Azienda',
-      type: 'string',
+      type: 'localeString',
     },
     {
       name: 'quote',
       title: 'Citazione',
-      type: 'text',
+      type: 'localeText',
     },
     {
       name: 'avatar',
