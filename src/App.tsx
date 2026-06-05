@@ -365,9 +365,10 @@ const About = () => {
                   {t("about.founderTitle")}
                 </h3>
               </div>
-              <p className="text-gray-400 text-sm md:text-base leading-relaxed">
-                {t("about.founderDesc")}
-              </p>
+              <p 
+                className="text-gray-400 text-sm md:text-base leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: t("about.founderDesc") }}
+              />
             </div>
             <div className="mt-8 border-t border-white/5 pt-6 flex items-center gap-4 text-xs text-gray-500 font-mono">
               <span className="text-kyber-blue">01.02</span>
