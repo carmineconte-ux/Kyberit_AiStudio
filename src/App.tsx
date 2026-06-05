@@ -1580,22 +1580,34 @@ export default function App() {
     ? createSanityConfig(siteConfig.sanity.projectId, siteConfig.sanity.dataset)
     : null;
 
+  // Isolate Sanity Studio to prevent router conflicts
+  if (window.location.pathname.startsWith("/admin")) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-kyber-cyan">Caricamento Sanity Studio...</div>}>
+        {dynamicSanityConfig ? (
+          <Studio config={dynamicSanityConfig} />
+        ) : (
+          <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+            {siteConfig === null ? (
+               <div className="text-kyber-cyan animate-pulse">Caricamento configurazione in corso...</div>
+            ) : (
+               <>
+                 <h2 className="text-2xl font-bold text-white mb-4">Sanity non configurato</h2>
+                 <p className="text-gray-400 mb-8">Controlla di aver inserito il Project ID nel file di configurazione.</p>
+                 <a href="/" className="bg-kyber-cyan text-black px-8 py-3 rounded-full font-bold uppercase tracking-widest">Torna alla Home</a>
+               </>
+            )}
+          </div>
+        )}
+      </Suspense>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-kyber-cyan">Inizializzazione...</div>}>
         <Routes>
           <Route path="/setup" element={<SetupPage />} />
-          <Route path="/admin/*" element={
-            dynamicSanityConfig ? (
-              <Studio config={dynamicSanityConfig} />
-            ) : (
-              <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
-                <h2 className="text-2xl font-bold text-white mb-4">Sanity non configurato</h2>
-                <p className="text-gray-400 mb-8">Inserisci il Project ID nel pannello di Setup per abilitare il backend.</p>
-                <Link to="/setup" className="bg-kyber-cyan text-black px-8 py-3 rounded-full font-bold uppercase tracking-widest">Vai al Setup</Link>
-              </div>
-            )
-          } />
           <Route path="/" element={
             <div className="relative">
               <Navbar />
