@@ -137,8 +137,8 @@ export const Navbar = () => {
       </div>
 
       {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 bg-black/95 backdrop-blur-2xl z-40 transition-all duration-500 md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex flex-col items-center justify-center h-full gap-12 text-2xl font-bold uppercase tracking-widest">
+      <div className={`fixed inset-0 bg-black/95 backdrop-blur-2xl z-40 transition-all duration-500 md:hidden overflow-y-auto ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+        <div className="flex flex-col items-center justify-start min-h-full pt-32 pb-12 gap-8 text-xl sm:text-2xl font-bold uppercase tracking-widest">
           {navLinks.map((link) => (
             <a 
               key={link.name}
