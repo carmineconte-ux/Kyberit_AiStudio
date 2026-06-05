@@ -9,7 +9,11 @@ import helmet from "helmet";
 import cors from "cors";
 import fs from "fs";
 
-const CONFIG_PATH = path.join(process.cwd(), "config.json");
+const DATA_DIR = path.join(process.cwd(), "data");
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const CONFIG_PATH = path.join(DATA_DIR, "config.json");
 
 interface DiagnosticReport {
   id: string;
