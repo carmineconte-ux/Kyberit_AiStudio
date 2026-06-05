@@ -630,13 +630,14 @@ const Services = ({ sanityConfig }: { sanityConfig?: any }) => {
     }
   ];
 
-  const services = sanityServices.length > 0 ? sanityServices.map(s => ({
+  const services = sanityServices.length > 0 ? sanityServices.map((s, index) => ({
     id: s._id,
     title: s.title,
     subTitle: s.subTitle,
     desc: s.desc,
     features: s.features || [],
-    image: s.image
+    // If no image is uploaded to Sanity, fallback to the original image based on index
+    image: s.image || fallbackServices[index]?.image || "/photo/Siti Web.webp"
   })) : fallbackServices;
 
   return (
