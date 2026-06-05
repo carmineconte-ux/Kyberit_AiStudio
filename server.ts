@@ -5,9 +5,8 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
-
-dotenv.config();
-
+import helmet from "helmet";
+import cors from "cors";
 import fs from "fs";
 
 const CONFIG_PATH = path.join(process.cwd(), "config.json");
@@ -119,37 +118,48 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Security Headers Middleware
-  app.use((req, res, next) => {
-    // Content Security Policy (CSP)
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://challenges.cloudflare.com https://*.cloudflare.com https://*.cloudflareinsights.com https://cdn.iubenda.com https://*.iubenda.com https://www.iubenda.com https://embeds.iubenda.com https://*.google.com https://*.googleapis.com https://*.gstatic.com https://cdn.jsdelivr.net",
-      "script-src-elem 'self' 'unsafe-inline' https://challenges.cloudflare.com https://*.cloudflare.com https://cdn.iubenda.com https://*.iubenda.com https://www.iubenda.com https://*.google.com https://*.gstatic.com https://cdn.jsdelivr.net",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://challenges.cloudflare.com https://*.cloudflare.com https://cdn.iubenda.com https://*.iubenda.com https://*.gstatic.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://picsum.photos https://*.picsum.photos https://cdn.sanity.io https://challenges.cloudflare.com https://*.cloudflare.com https://www.iubenda.com https://*.iubenda.com https://*.google.com https://*.gstatic.com",
-      "connect-src 'self' https://generativelanguage.googleapis.com https://*.sanity.io https://cdn.iubenda.com https://*.iubenda.com https://challenges.cloudflare.com https://*.cloudflare.com https://*.cloudflareinsights.com https://*.google.com https://*.googleapis.com",
-      "frame-src 'self' https://challenges.cloudflare.com https://*.cloudflare.com https://www.iubenda.com https://*.iubenda.com https://cdn.iubenda.com https://*.google.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "upgrade-insecure-requests"
-    ].join("; ");
+  // Security Headers Middleware (Helmet)
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://*.cloudflareinsights.com", "https://cdn.iubenda.com", "https://*.iubenda.com", "https://www.iubenda.com", "https://embeds.iubenda.com", "https://*.google.com", "https://*.googleapis.com", "https://*.gstatic.com", "https://cdn.jsdelivr.net"],
+        scriptSrcElem: ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://cdn.iubenda.com", "https://*.iubenda.com", "https://www.iubenda.com", "https://*.google.com", "https://*.gstatic.com", "https://cdn.jsdelivr.net"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://cdn.iubenda.com", "https://*.iubenda.com", "https://*.gstatic.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https://picsum.photos", "https://*.picsum.photos", "https://cdn.sanity.io", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://www.iubenda.com", "https://*.iubenda.com", "https://*.google.com", "https://*.gstatic.com"],
+        connectSrc: ["'self'", "https://generativelanguage.googleapis.com", "https://*.sanity.io", "https://cdn.iubenda.com", "https://*.iubenda.com", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://*.cloudflareinsights.com", "https://*.google.com", "https://*.googleapis.com"],
+        frameSrc: ["'self'", "https://challenges.cloudflare.com", "https://*.cloudflare.com", "https://www.iubenda.com", "https://*.iubenda.com", "https://cdn.iubenda.com", "https://*.google.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }));
 
-    res.setHeader("Content-Security-Policy", csp);
-    
-    // Permissions Policy
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=(), xr-spatial-tracking=()");
-    
-    // Cross-Origin-Opener-Policy (COOP)
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-    
-    // Other security headers
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    
-    next();
+  // CORS Middleware
+  app.use(cors({
+    origin: ["https://kyberit.tech", "https://www.kyberit.tech", "http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }));
+
+  // Rate Limiters
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Troppi tentativi di accesso. Riprova tra 15 minuti." }
+  });
+
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Troppe richieste. Riprova tra un'ora." }
   });
 
   // Middleware to check setup password
@@ -176,12 +186,12 @@ async function startServer() {
   });
 
   // API Route to get full current config (Requires Auth)
-  app.get("/api/config", checkAuth, (req, res) => {
+  app.get("/api/config", authLimiter, checkAuth, (req, res) => {
     res.json(getConfig());
   });
 
   // API Route to save config
-  app.post("/api/config", checkAuth, (req, res) => {
+  app.post("/api/config", authLimiter, checkAuth, (req, res) => {
     saveConfig(req.body);
     res.json({ success: true });
   });
@@ -227,7 +237,7 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
 });
 
   // API Route to test SMTP connection
-  app.post("/api/config/test-smtp", checkAuth, async (req, res) => {
+  app.post("/api/config/test-smtp", authLimiter, checkAuth, async (req, res) => {
     const { host, port, user, pass } = req.body;
     
     const transporter = nodemailer.createTransport({
@@ -252,7 +262,7 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
   });
 
   // API Route for Contact Form
-  app.post("/api/contact", async (req, res) => {
+  app.post("/api/contact", apiLimiter, async (req, res) => {
     const { name, email, subject, message, lang = "it", turnstileToken } = req.body;
     
     // Verify Turnstile
@@ -373,7 +383,7 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
   });
 
   // API Route for AI Infrastructure Audit Storage and Notification
-  app.post("/api/diagnostic/save", async (req, res) => {
+  app.post("/api/diagnostic/save", apiLimiter, async (req, res) => {
     const { url, email, report, lang = "it", turnstileToken } = req.body;
 
     // Verify Turnstile
