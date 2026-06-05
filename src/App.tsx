@@ -790,9 +790,41 @@ const TurnstileWidget = ({ onVerify, siteKey }: { onVerify: (token: string) => v
 
 
 
-const Testimonials = () => {
+import { getSanityClient } from "./sanity/client";
+
+const Testimonials = ({ sanityConfig }: { sanityConfig?: any }) => {
   const { t } = useTranslation();
-  const reviews = t("testimonials.items", { returnObjects: true }) as { name: string, role: string, quote: string }[];
+  const [sanityReviews, setSanityReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const projectId = sanityConfig?.projectId || import.meta.env.VITE_SANITY_PROJECT_ID;
+    const dataset = sanityConfig?.dataset || import.meta.env.VITE_SANITY_DATASET || 'production';
+    
+    if (!projectId) {
+      setLoading(false);
+      return;
+    }
+    
+    const client = getSanityClient(projectId, dataset);
+    client.fetch(`*[_type == "testimonial"]{
+      name,
+      role,
+      quote,
+      rating,
+      "avatarUrl": avatar.asset->url
+    }`).then((data: any[]) => {
+      setSanityReviews(data);
+      setLoading(false);
+    }).catch((err: any) => {
+      console.error("Sanity fetch error:", err);
+      setLoading(false);
+    });
+  }, [sanityConfig]);
+
+  const fallbackReviews = t("testimonials.items", { returnObjects: true }) as { name: string, role: string, quote: string, rating?: number }[];
+  
+  const reviews = sanityReviews.length > 0 ? sanityReviews : fallbackReviews;
 
   return (
     <section className="py-24 bg-kyber-dark">
@@ -807,11 +839,12 @@ const Testimonials = () => {
             <div key={i} className="glass-panel p-8 rounded-2xl relative">
               <Quote className="absolute top-6 right-6 text-kyber-cyan/20" size={40} />
               <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} className="fill-kyber-cyan text-kyber-cyan" />)}
+                {Array.from({ length: r.rating || 5 }).map((_, s) => <Star key={s} size={14} className="fill-kyber-cyan text-kyber-cyan" />)}
+                {Array.from({ length: 5 - (r.rating || 5) }).map((_, s) => <Star key={s + 5} size={14} className="text-gray-600" />)}
               </div>
               <p className="text-gray-300 italic mb-8 leading-relaxed">"{r.quote}"</p>
               <div className="flex items-center gap-4">
-                <img src={`https://picsum.photos/seed/${r.name.split(' ')[0].toLowerCase()}/100/100`} alt={r.name} className="w-12 h-12 rounded-full border border-kyber-cyan/30" referrerPolicy="no-referrer" />
+                <img src={r.avatarUrl || `https://picsum.photos/seed/${r.name.split(' ')[0].toLowerCase()}/100/100`} alt={r.name} className="w-12 h-12 rounded-full border border-kyber-cyan/30 object-cover" referrerPolicy="no-referrer" />
                 <div>
                   <div className="font-bold text-sm">{r.name}</div>
                   <div className="text-[10px] text-gray-500 uppercase tracking-widest">{r.role}</div>
@@ -1572,7 +1605,7 @@ export default function App() {
               <Process />
               <Pricing />
 
-              <Testimonials />
+              <Testimonials sanityConfig={dynamicSanityConfig} />
               <ContactForm />
               <Footer />
             </div>
@@ -1587,7 +1620,7 @@ export default function App() {
               <Process />
               <Pricing />
 
-              <Testimonials />
+              <Testimonials sanityConfig={dynamicSanityConfig} />
               <ContactForm />
               <Footer />
             </div>
