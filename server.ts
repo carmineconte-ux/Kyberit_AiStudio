@@ -83,7 +83,7 @@ const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const SETUP_PASSWORD = process.env.SETUP_PASSWORD || "kyberit2026";
+const SETUP_PASSWORD = process.env.SETUP_PASSWORD || "Kyberit@2026";
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
 
 async function verifyTurnstile(token: string) {
