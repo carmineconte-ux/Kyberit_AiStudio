@@ -7,6 +7,7 @@ import testimonial from './schemas/testimonial';
 import localeString from './schemas/localeString';
 import localeText from './schemas/localeText';
 import localeArrayString from './schemas/localeArrayString';
+import localeBlock from './schemas/localeBlock';
 import about from './schemas/about';
 import pricingTier from './schemas/pricingTier';
 import legal from './schemas/legal';
@@ -19,7 +20,7 @@ export const createSanityConfig = (projectId?: string, dataset?: string) => defi
   basePath: '/admin',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [settings, about, service, pricingTier, testimonial, localeString, localeText, localeArrayString, legal],
+    types: [settings, about, service, pricingTier, testimonial, localeString, localeText, localeArrayString, localeBlock, legal],
   },
 });
 

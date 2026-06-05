@@ -28,7 +28,7 @@ export default defineType({
     defineField({
       name: 'content',
       title: 'Testo del Documento',
-      type: 'localeText', // Uso localeText per supportare multilingua
+      type: 'localeBlock', // Uso localeBlock per supportare formattazione ricca e multilingua
       description: 'Inserisci il testo legale della policy',
     }),
     defineField({
