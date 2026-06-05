@@ -5,6 +5,7 @@ import { getSanityClient } from "./sanity/client";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Navbar, Footer } from "./App";
+import { Helmet } from "react-helmet-async";
 
 export default function LegalPage({ sanityConfig }: { sanityConfig: any }) {
   const { t, i18n } = useTranslation();
@@ -54,6 +55,12 @@ export default function LegalPage({ sanityConfig }: { sanityConfig: any }) {
 
   return (
     <div className="relative min-h-screen bg-black flex flex-col">
+      {data?.title && (
+        <Helmet>
+          <title>{data.title} | Kyberit</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+      )}
       <Navbar />
       
       <div className="flex-grow pt-32 pb-24 px-6 relative z-10">
