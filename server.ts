@@ -139,6 +139,16 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Basic Anti-Fuzzer / Bad Bot Blocker
+  app.use((req, res, next) => {
+    const ua = req.get('User-Agent') || '';
+    const badBots = ['fuzzer', 'nikto', 'sqlmap', 'nmap', 'zgrab', 'masscan'];
+    if (!ua || badBots.some(bot => ua.toLowerCase().includes(bot))) {
+      return res.status(403).send('Forbidden: Invalid User-Agent');
+    }
+    next();
+  });
+
   // Security Headers Middleware (Helmet)
   app.use(helmet({
     contentSecurityPolicy: {
@@ -674,8 +684,23 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath, { dotfiles: 'allow' }));
+    app.use(express.static(distPath, { 
+      dotfiles: 'allow',
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html') || filePath.endsWith('.xml') || filePath.endsWith('.txt')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        } else {
+          // JS, CSS, images can be cached
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      }
+    }));
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
