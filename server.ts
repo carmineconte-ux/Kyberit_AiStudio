@@ -692,6 +692,9 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
     app.use(express.static(distPath, { 
       dotfiles: 'allow',
       setHeaders: (res, filePath) => {
+        // Explicitly set HSTS on all static files
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        
         if (filePath.endsWith('.html') || filePath.endsWith('.xml') || filePath.endsWith('.txt')) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
           res.setHeader('Pragma', 'no-cache');
