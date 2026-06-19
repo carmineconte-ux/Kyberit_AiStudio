@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { GoogleGenAI, Type } from "@google/genai";
 import CookieBanner from "./CookieBanner";
 import AccessibilityWidget from "./AccessibilityWidget";
+import AnalyticsIntegration from "./AnalyticsIntegration";
 import SetupPage from "./SetupPage";
 import LegalPage from "./LegalPage";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -1287,6 +1288,7 @@ export default function App() {
     <BrowserRouter>
       <CookieBanner />
       <AccessibilityWidget />
+      <AnalyticsIntegration />
       <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-kyber-cyan">Inizializzazione...</div>}>
         <Routes>
           <Route path="/setup" element={<SetupPage />} />
