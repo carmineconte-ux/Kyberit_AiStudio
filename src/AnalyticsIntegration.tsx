@@ -11,8 +11,8 @@ declare global {
 
 export default function AnalyticsIntegration() {
   const location = useLocation();
-  // Legge l'ID direttamente dalle variabili d'ambiente di Vite/Coolify
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  // Legge l'ID direttamente dalle variabili d'ambiente di Vite/Coolify, oppure usa quello fisso
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || "G-X70VHQVJ0E";
 
   useEffect(() => {
     const injectGA = () => {
