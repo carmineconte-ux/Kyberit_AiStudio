@@ -1,14 +1,17 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Terminal, Shield, Globe, Network, Cpu, Activity, ArrowRight, CheckCircle2, Star, Quote, Send, Mail, Phone, MapPin, Search, Rocket, PenTool, ShieldCheck, ChevronDown, Target, Crown, Zap, Fingerprint } from "lucide-react";
+import { Terminal, Shield, Globe, Network, Cpu, Activity, ArrowRight, CheckCircle2, Star, Quote, Send, Mail, Phone, MapPin, Search, Rocket, PenTool, ShieldCheck, ChevronDown, Target, Crown, Zap, Fingerprint, Lock as LockIcon } from "lucide-react";
 import { useState, useEffect, useRef, FormEvent, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { GoogleGenAI, Type } from "@google/genai";
 import CookieBanner from "./CookieBanner";
 import AccessibilityWidget from "./AccessibilityWidget";
 import AnalyticsIntegration from "./AnalyticsIntegration";
 import SetupPage from "./SetupPage";
 import LegalPage from "./LegalPage";
+import ToolsPage from "./ToolsPage";
+import { Navbar } from "./Navbar";
+import { Footer } from "./Footer";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 declare global {
@@ -69,101 +72,7 @@ const LanguageSwitcher = () => {
   );
 };
 
-export const Navbar = () => {
-  const { t } = useTranslation();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const navLinks = [
-    { name: t("nav.about"), href: "#chi-siamo" },
-    { name: t("nav.services"), href: "#servizi" },
-    { name: t("nav.process"), href: "#processo" },
-    { name: t("nav.pricing"), href: "#listino" },
-    { name: t("nav.contact"), href: "#contatti" },
-  ];
-
-  return (
-    <>
-      <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? "bg-black/90 backdrop-blur-xl border-b border-white/10 py-4 shadow-2xl" : "bg-transparent py-8"}`}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-kyber-cyan flex items-center justify-center rounded-sm rotate-45 group-hover:rotate-90 transition-transform duration-500 shadow-lg shadow-kyber-cyan/20">
-              <span className="text-black font-black -rotate-45 group-hover:-rotate-90 transition-transform duration-500">K</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tighter text-white leading-none">KYBER<span className="text-kyber-cyan">IT</span></span>
-              <span className="text-[8px] font-bold tracking-[0.2em] text-kyber-cyan uppercase">Digital Infrastructure</span>
-            </div>
-          </Link>
-          
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-10">
-            <div className="flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400">
-              {navLinks.map((link) => (
-                <a 
-                  key={link.name}
-                  href={link.href} 
-                  className="hover:text-kyber-cyan transition-all duration-300 relative group py-2"
-                >
-                  {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-kyber-cyan transition-all duration-300 group-hover:w-full"></span>
-                </a>
-              ))}
-            </div>
-
-            <a 
-              href="#contatti"
-              className="bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-kyber-cyan hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5"
-            >
-              {t("nav.freeAnalysis")}
-            </a>
-          </div>
-
-          {/* Mobile Toggle */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-white p-2"
-          >
-            <div className="w-6 h-5 flex flex-col justify-between">
-              <span className={`h-0.5 w-full bg-white transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-              <span className={`h-0.5 w-full bg-white transition-all ${mobileMenuOpen ? "opacity-0" : ""}`}></span>
-              <span className={`h-0.5 w-full bg-white transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
-            </div>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 bg-black/95 backdrop-blur-2xl z-40 transition-all duration-500 md:hidden overflow-y-auto ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex flex-col items-center justify-start min-h-full pt-32 pb-12 gap-8 text-xl sm:text-2xl font-bold uppercase tracking-widest">
-          {navLinks.map((link) => (
-            <a 
-              key={link.name}
-              href={link.href} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-white hover:text-kyber-cyan transition-colors"
-            >
-              {link.name}
-            </a>
-          ))}
-          <a 
-            href="#contatti"
-            onClick={() => setMobileMenuOpen(false)}
-            className="bg-kyber-cyan text-black px-12 py-5 rounded-full text-sm font-black"
-          >
-            {t("nav.freeAnalysis")}
-          </a>
-        </div>
-      </div>
-    </>
-  );
-};
+// Navbar component moved to separate file ./Navbar.tsx
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -795,8 +704,9 @@ const Process = () => {
                   <motion.div 
                     initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
+                    whileHover={{ scale: 1.02 }}
                     viewport={{ once: true }}
-                    className="relative"
+                    className="relative p-6 rounded-2xl border border-transparent hover:border-kyber-blue/20 hover:bg-white/[0.01] transition-all duration-300 cursor-pointer"
                   >
                     <div className={`flex items-center gap-2 mb-4 font-mono text-xs text-kyber-blue ${i % 2 === 0 ? 'md:justify-end' : 'md:justify-start'}`}>
                       <span>PHASE {s.num}</span>
@@ -823,6 +733,119 @@ const Process = () => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const ToolsTeaser = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <section className="py-24 bg-gradient-to-b from-black to-neutral-950 relative overflow-hidden border-t border-b border-white/5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-kyber-cyan/5 via-transparent to-transparent pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-kyber-cyan font-mono text-sm mb-2 uppercase tracking-widest">// SECURITY LABS</div>
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">
+            {t("tools.title")}
+          </h2>
+          <p className="text-gray-400 text-lg">
+            {t("tools.desc")}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {/* Card 1 */}
+          <motion.div 
+            whileHover={{ scale: 1.03, y: -4 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="glass-panel p-6 rounded-2xl border border-white/10 bg-white/[0.01] backdrop-blur-md flex flex-col justify-between hover:border-kyber-cyan/40 hover:bg-white/[0.02] hover:shadow-lg hover:shadow-cyan/5 transition-all group cursor-pointer"
+          >
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-kyber-cyan/10 flex items-center justify-center text-kyber-cyan mb-4 border border-kyber-cyan/20">
+                <Globe size={20} />
+              </div>
+              <h3 className="text-lg font-bold mb-2">{t("tools.header.title")}</h3>
+              <p className="text-gray-400 text-xs leading-relaxed">
+                {t("tools.header.desc")}
+              </p>
+            </div>
+            <Link to="/tools?tab=header" className="text-kyber-cyan text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mt-6 group-hover:text-white transition-colors">
+              {t("tools.startTest")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+
+          {/* Card 2 */}
+          <motion.div 
+            whileHover={{ scale: 1.03, y: -4 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="glass-panel p-6 rounded-2xl border border-white/10 bg-white/[0.01] backdrop-blur-md flex flex-col justify-between hover:border-kyber-cyan/40 hover:bg-white/[0.02] hover:shadow-lg hover:shadow-cyan/5 transition-all group cursor-pointer"
+          >
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 mb-4 border border-green-500/20">
+                <Shield size={20} />
+              </div>
+              <h3 className="text-lg font-bold mb-2">{t("tools.ssl.title")}</h3>
+              <p className="text-gray-400 text-xs leading-relaxed">
+                {t("tools.ssl.desc")}
+              </p>
+            </div>
+            <Link to="/tools?tab=ssl" className="text-kyber-cyan text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mt-6 group-hover:text-white transition-colors">
+              {t("tools.startTest")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+
+          {/* Card 3 */}
+          <motion.div 
+            whileHover={{ scale: 1.03, y: -4 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="glass-panel p-6 rounded-2xl border border-white/10 bg-white/[0.01] backdrop-blur-md flex flex-col justify-between hover:border-kyber-cyan/40 hover:bg-white/[0.02] hover:shadow-lg hover:shadow-cyan/5 transition-all group cursor-pointer"
+          >
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-kyber-cyan mb-4 border border-cyan-500/20">
+                <LockIcon size={20} />
+              </div>
+              <h3 className="text-lg font-bold mb-2">{t("tools.password.title")}</h3>
+              <p className="text-gray-400 text-xs leading-relaxed">
+                {t("tools.password.desc")}
+              </p>
+            </div>
+            <Link to="/tools?tab=password" className="text-kyber-cyan text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mt-6 group-hover:text-white transition-colors">
+              {t("tools.startTest")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+
+          {/* Card 4 */}
+          <motion.div 
+            whileHover={{ scale: 1.03, y: -4 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="glass-panel p-6 rounded-2xl border border-white/10 bg-white/[0.01] backdrop-blur-md flex flex-col justify-between hover:border-kyber-cyan/40 hover:bg-white/[0.02] hover:shadow-lg hover:shadow-cyan/5 transition-all group cursor-pointer"
+          >
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-kyber-cyan mb-4 border border-cyan-500/20">
+                <Mail size={20} />
+              </div>
+              <h3 className="text-lg font-bold mb-2">{t("tools.dns.title")}</h3>
+              <p className="text-gray-400 text-xs leading-relaxed">
+                {t("tools.dns.desc")}
+              </p>
+            </div>
+            <Link to="/tools?tab=dns" className="text-kyber-cyan text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mt-6 group-hover:text-white transition-colors">
+              {t("tools.startTest")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
+
+        <div className="text-center">
+          <Link
+            to="/tools"
+            className="bg-kyber-cyan text-black hover:bg-white hover:text-black px-8 py-4 rounded-xl font-bold text-sm inline-flex items-center gap-3 transition-all"
+          >
+            Accedi a tutti i test gratuiti <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     </section>
@@ -944,7 +967,12 @@ const Testimonials = ({ sanityConfig }: { sanityConfig?: any }) => {
 
         <div className="grid md:grid-cols-3 gap-8">
           {reviews.map((r, i) => (
-            <div key={i} className="glass-panel p-8 rounded-2xl relative">
+            <motion.div 
+              key={i} 
+              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="glass-panel p-8 rounded-2xl relative border border-white/5 hover:border-kyber-cyan/20 hover:bg-white/[0.02] transition-all cursor-pointer"
+            >
               <Quote className="absolute top-6 right-6 text-kyber-cyan/20" size={40} />
               <div className="flex gap-1 mb-6">
                 {Array.from({ length: r.rating || 5 }).map((_, s) => <Star key={s} size={14} className="fill-kyber-cyan text-kyber-cyan" />)}
@@ -958,7 +986,7 @@ const Testimonials = ({ sanityConfig }: { sanityConfig?: any }) => {
                   <div className="text-[10px] text-gray-500 uppercase tracking-widest">{r.role}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -1168,67 +1196,7 @@ const ContactForm = () => {
   );
 };
 
-export const Footer = () => {
-  const { t } = useTranslation();
-  
-  return (
-    <footer className="bg-kyber-dark border-t border-white/10 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-6 h-6 bg-kyber-cyan flex items-center justify-center rounded-sm rotate-45">
-                <span className="text-black font-bold text-[10px] -rotate-45">K</span>
-              </div>
-              <span className="text-lg font-bold tracking-tighter">KYBER<span className="text-kyber-cyan">IT</span></span>
-            </div>
-            <p className="text-gray-500 text-sm max-w-sm mb-6">
-              {t("footer.desc")}
-            </p>
-            <div className="flex items-center gap-4 font-mono text-[10px] text-kyber-cyan">
-              <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> SYS::OPERATIONAL</span>
-              <span className="opacity-50">BUILD::v4.2.1-stable</span>
-            </div>
-          </div>
-          
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-6">{t("footer.sections.services")}</h4>
-            <ul className="space-y-3 text-sm text-gray-500 font-mono">
-              <li><a href="#servizi" className="hover:text-kyber-cyan transition-colors">/web-development</a></li>
-              <li><a href="#servizi" className="hover:text-kyber-cyan transition-colors">/networking</a></li>
-              <li><a href="#servizi" className="hover:text-kyber-cyan transition-colors">/consulenza</a></li>
-              <li><a href="#servizi" className="hover:text-kyber-cyan transition-colors">/cybersicurezza</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-6">{t("footer.sections.company")}</h4>
-            <ul className="space-y-3 text-sm text-gray-500 font-mono">
-              <li><a href="#processo" className="hover:text-kyber-cyan transition-colors">{t("nav.process")}</a></li>
-              <li><a href="#contatti" className="hover:text-kyber-cyan transition-colors">{t("nav.contact")}</a></li>
-              <li><Link to="/setup" className="hover:text-kyber-cyan transition-colors">/setup</Link></li>
-              <li><Link to="/admin" className="hover:text-kyber-cyan transition-colors">/admin</Link></li>
-            </ul>
-          </div>
-        </div>
-        
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-[10px] text-gray-600 uppercase tracking-widest font-mono">
-            <div>© {new Date().getFullYear()} {KYBERIT_DATA.name.toUpperCase()}. {t("footer.rights")}</div>
-            <div>P.IVA: {KYBERIT_DATA.vat}</div>
-            <div className="flex items-center gap-4">
-              <Link to="/legal/privacy-policy" className="hover:text-kyber-cyan transition-colors" title="Privacy Policy">Privacy Policy</Link>
-              <Link to="/legal/cookie-policy" className="hover:text-kyber-cyan transition-colors" title="Cookie Policy">Cookie Policy</Link>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-kyber-cyan rounded-full"></div> ONLINE
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-};
+// Footer component moved to separate file ./Footer.tsx
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -1293,6 +1261,8 @@ export default function App() {
         <Routes>
           <Route path="/setup" element={<SetupPage />} />
           <Route path="/legal/:slug" element={<LegalPage sanityConfig={dynamicSanityConfig} />} />
+          <Route path="/tools" element={<ToolsPage />} />
+          <Route path="/test-gratuiti" element={<ToolsPage />} />
           <Route path="/" element={
             <div className="relative">
               <Navbar />
@@ -1300,6 +1270,7 @@ export default function App() {
               <About sanityConfig={dynamicSanityConfig} />
               <Services sanityConfig={dynamicSanityConfig} />
               <Process />
+              <ToolsTeaser />
               <Pricing sanityConfig={dynamicSanityConfig} />
 
               <Testimonials sanityConfig={dynamicSanityConfig} />
@@ -1315,6 +1286,7 @@ export default function App() {
               <About sanityConfig={dynamicSanityConfig} />
               <Services sanityConfig={dynamicSanityConfig} />
               <Process />
+              <ToolsTeaser />
               <Pricing sanityConfig={dynamicSanityConfig} />
 
               <Testimonials sanityConfig={dynamicSanityConfig} />

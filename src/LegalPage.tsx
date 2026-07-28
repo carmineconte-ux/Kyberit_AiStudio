@@ -4,7 +4,8 @@ import { PortableText } from "@portabletext/react";
 import { getSanityClient } from "./sanity/client";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
-import { Navbar, Footer } from "./App";
+import { Navbar } from "./Navbar";
+import { Footer } from "./Footer";
 import { Helmet } from "react-helmet-async";
 
 export default function LegalPage({ sanityConfig }: { sanityConfig: any }) {

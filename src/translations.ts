@@ -8,7 +8,8 @@ export const translations = {
         pricing: "Protocolli SLA",
         diagnostics: "Diagnostica",
         contact: "Contatti",
-        freeAnalysis: "Analisi Gratuita"
+        freeAnalysis: "Analisi Gratuita",
+        tools: "Strumenti"
       },
       hero: {
         badge: "INFRASTRUTTURA DIGITALE DI NUOVA GENERAZIONE",
@@ -235,6 +236,65 @@ export const translations = {
             "Supporto Sistemistico Senior dedicato [€65/ora]"
           ]
         }
+      },
+      tools: {
+        title: "Security Tool Hub",
+        desc: "Esegui test di sicurezza gratuiti e immediati per verificare la resilienza e l'integrità della tua infrastruttura digitale.",
+        scanBtn: "Scansiona",
+        scanningBtn: "Scansione in corso...",
+        backToHome: "Torna alla Home",
+        startTest: "Avvia Test",
+        header: {
+          title: "Header Security Scan",
+          desc: "Analizza CSP, HSTS, X-Frame-Options e altri header HTTP.",
+          placeholder: "https://tuo-sito.com",
+          scoreLabel: "Punteggio di Sicurezza",
+          details: "Dettagli Header",
+          noData: "Inserisci un URL e avvia la scansione per vedere i risultati."
+        },
+        ssl: {
+          title: "SSL / TLS Checker",
+          desc: "Validità certificato, versione TLS, cipher suite.",
+          placeholder: "tuo-sito.com",
+          valid: "Valido",
+          invalid: "Non Valido / Scaduto",
+          issuer: "Emesso da",
+          expires: "Scade il",
+          daysLeft: "giorni rimanenti",
+          protocol: "Protocollo",
+          cipher: "Cipher Suite",
+          noData: "Inserisci un dominio e avvia il controllo SSL per vedere i risultati."
+        },
+        password: {
+          title: "Password Breach Check",
+          desc: "Verifica se la tua password è apparsa in data breach noti (k-anonymity).",
+          placeholder: "Inserisci una password da verificare",
+          breached: "ATTENZIONE! Questa password è apparsa in {{count}} data breach. Cambiala immediatamente!",
+          safe: "Sicura! Questa password non è apparsa in nessun data breach noto.",
+          warning: "Non inviamo mai la tua password reale al server; utilizziamo un hash crittografato anonimo (k-anonymity) per la massima riservatezza.",
+          noData: "Inserisci una password per avviare la verifica."
+        },
+        dns: {
+          title: "Email / DNS Audit",
+          desc: "Controlla SPF, DKIM, DMARC e MX del tuo dominio.",
+          placeholder: "tuo-dominio.com",
+          configured: "Configurato correttamente",
+          missing: "Mancante o non valido",
+          noData: "Inserisci un dominio per controllare i record DNS."
+        },
+        unlockReport: {
+          title: "SBLOCCA IL REPORT COMPLETO",
+          desc: "Inserisci i tuoi dati: ti invio il PDF dettagliato con remediation prioritizzata.",
+          name: "Nome *",
+          email: "Email di lavoro *",
+          company: "Azienda (opzionale)",
+          consent: "Acconsento al trattamento dei dati per ricevere il report e comunicazioni di Kyberit.",
+          submit: "Ricevi il report",
+          sending: "Invio in corso...",
+          error: "Compila tutti i campi obbligatori e acconsenti al trattamento dati.",
+          successTitle: "Report Richiesto con Successo!",
+          successDesc: "Abbiamo inviato il report dettagliato a: {{email}}. Controlla la tua casella di posta."
+        }
       }
     }
   },
@@ -247,7 +307,8 @@ export const translations = {
         pricing: "SLA Protocols",
         diagnostics: "Diagnostics",
         contact: "Contact",
-        freeAnalysis: "Free Analysis"
+        freeAnalysis: "Free Analysis",
+        tools: "Tools"
       },
       hero: {
         badge: "NEXT-GENERATION DIGITAL INFRASTRUCTURE",
@@ -474,6 +535,65 @@ export const translations = {
             "Dedicated Senior System Support [€65/hour]"
           ]
         }
+      },
+      tools: {
+        title: "Security Tool Hub",
+        desc: "Perform free, instant security tests to verify the resilience and integrity of your digital infrastructure.",
+        scanBtn: "Scan",
+        scanningBtn: "Scanning...",
+        backToHome: "Back to Home",
+        startTest: "Start Test",
+        header: {
+          title: "Header Security Scan",
+          desc: "Analyzes CSP, HSTS, X-Frame-Options, and other HTTP headers.",
+          placeholder: "https://your-site.com",
+          scoreLabel: "Security Score",
+          details: "Header Details",
+          noData: "Enter a URL and start scanning to see the results."
+        },
+        ssl: {
+          title: "SSL / TLS Checker",
+          desc: "Certificate validity, TLS version, cipher suite.",
+          placeholder: "your-site.com",
+          valid: "Valid",
+          invalid: "Invalid / Expired",
+          issuer: "Issued by",
+          expires: "Expires on",
+          daysLeft: "days left",
+          protocol: "Protocol",
+          cipher: "Cipher Suite",
+          noData: "Enter a domain and start SSL check to see the results."
+        },
+        password: {
+          title: "Password Breach Check",
+          desc: "Check if your password has appeared in known data breaches (k-anonymity).",
+          placeholder: "Enter a password to verify",
+          breached: "WARNING! This password has appeared in {{count}} data breaches. Change it immediately!",
+          safe: "Safe! This password has not appeared in any known data breach.",
+          warning: "We never send your actual password to the server; we use an anonymous encrypted hash (k-anonymity) for maximum privacy.",
+          noData: "Enter a password to start the check."
+        },
+        dns: {
+          title: "Email / DNS Audit",
+          desc: "Check SPF, DKIM, DMARC, and MX of your domain.",
+          placeholder: "your-domain.com",
+          configured: "Configured correctly",
+          missing: "Missing or invalid",
+          noData: "Enter a domain to check the DNS records."
+        },
+        unlockReport: {
+          title: "UNLOCK THE FULL REPORT",
+          desc: "Enter your details: I will send you the detailed PDF with prioritized remediation.",
+          name: "Name *",
+          email: "Work email *",
+          company: "Company (optional)",
+          consent: "I consent to the processing of my data to receive the report and communications from Kyberit.",
+          submit: "Receive the report",
+          sending: "Sending...",
+          error: "Please fill in all required fields and consent to data processing.",
+          successTitle: "Report Requested Successfully!",
+          successDesc: "We have sent the detailed report to: {{email}}. Please check your inbox."
+        }
       }
     }
   },
@@ -486,7 +606,8 @@ export const translations = {
         pricing: "SLA-Protokolle",
         diagnostics: "Diagnose",
         contact: "Kontakt",
-        freeAnalysis: "Kostenlose Analyse"
+        freeAnalysis: "Kostenlose Analyse",
+        tools: "Werkzeuge"
       },
       hero: {
         badge: "DIGITALE INFRASTRUKTUR DER NÄCHSTEN GENERATION",
@@ -711,6 +832,65 @@ export const translations = {
             "Dedizierter Senior-System-Support [€65/Std.]"
           ]
         }
+      },
+      tools: {
+        title: "Sicherheits-Tool-Hub",
+        desc: "Führen Sie kostenlose, sofortige Sicherheitstests durch, um die Belastbarkeit und Integrität Ihrer digitalen Infrastruktur zu überprüfen.",
+        scanBtn: "Scannen",
+        scanningBtn: "Scannen...",
+        backToHome: "Zurück zur Startseite",
+        startTest: "Test starten",
+        header: {
+          title: "Header Security Scan",
+          desc: "Analysiert CSP, HSTS, X-Frame-Options und andere HTTP-Header.",
+          placeholder: "https://ihre-website.com",
+          scoreLabel: "Sicherheitsbewertung",
+          details: "Header-Details",
+          noData: "Geben Sie eine URL ein und starten Sie den Scan, um die Ergebnisse zu sehen."
+        },
+        ssl: {
+          title: "SSL / TLS Checker",
+          desc: "Zertifikatsgültigkeit, TLS-Version, Cipher-Suite.",
+          placeholder: "ihre-website.com",
+          valid: "Gültig",
+          invalid: "Ungültig / Abgelaufen",
+          issuer: "Ausgestellt von",
+          expires: "Läuft ab am",
+          daysLeft: "Tage verbleibend",
+          protocol: "Protokoll",
+          cipher: "Cipher-Suite",
+          noData: "Geben Sie eine Domain ein und starten Sie die SSL-Prüfung, um die Ergebnisse zu sehen."
+        },
+        password: {
+          title: "Password Breach Check",
+          desc: "Überprüfen Sie, ob Ihr Passwort in bekannten Datenlecks aufgetaucht ist (k-Anonymität).",
+          placeholder: "Passwort zur Überprüfung eingeben",
+          breached: "WARNUNG! Dieses Passwort ist in {{count}} Datenlecks aufgetaucht. Ändern Sie es sofort!",
+          safe: "Sicher! Dieses Passwort ist in keinem bekannten Datenleck aufgetaucht.",
+          warning: "Wir senden Ihr tatsächliches Passwort niemals an den Server. Wir verwenden einen anonymen verschlüsselten Hash (k-Anonymität) für maximale Privatsphäre.",
+          noData: "Geben Sie ein Passwort ein, um die Prüfung zu starten."
+        },
+        dns: {
+          title: "Email / DNS Audit",
+          desc: "Überprüfen Sie SPF, DKIM, DMARC und MX Ihrer Domain.",
+          placeholder: "ihre-domain.com",
+          configured: "Korrekt konfiguriert",
+          missing: "Fehlend oder ungültig",
+          noData: "Geben Sie eine Domain ein, um die DNS-Einträge zu prüfen."
+        },
+        unlockReport: {
+          title: "VOLLSTÄNDIGEN BERICHT FREISCHALTEN",
+          desc: "Geben Sie Ihre Daten ein: Ich sende Ihnen das detaillierte PDF mit priorisierten Handlungsempfehlungen.",
+          name: "Name *",
+          email: "E-Mail-Adresse (geschäftlich) *",
+          company: "Unternehmen (optional)",
+          consent: "Ich stimme der Verarbeitung meiner Daten zu, um den Bericht und Mitteilungen von Kyberit zu erhalten.",
+          submit: "Bericht anfordern",
+          sending: "Wird gesendet...",
+          error: "Bitte füllen Sie alle Pflichtfelder aus und stimmen Sie der Datenverarbeitung zu.",
+          successTitle: "Bericht erfolgreich angefordert!",
+          successDesc: "Wir haben den detaillierten Bericht an {{email}} gesendet. Bitte prüfen Sie Ihren Posteingang."
+        }
       }
     }
   },
@@ -723,7 +903,8 @@ export const translations = {
         pricing: "Protocoles SLA",
         diagnostics: "Diagnostics",
         contact: "Contact",
-        freeAnalysis: "Analyse Gratuite"
+        freeAnalysis: "Analyse Gratuite",
+        tools: "Outils"
       },
       hero: {
         badge: "INFRASTRUCTURE NUMÉRIQUE DE NOUVELLE GÉNÉRATION",
@@ -947,6 +1128,65 @@ export const translations = {
             "Développement d'architecture Web ou de tableaux de bord personnalisés [€1500]",
             "Support système senior dédié [€65/heure]"
           ]
+        }
+      },
+      tools: {
+        title: "Hub d'Outils de Sécurité",
+        desc: "Exécutez des tests de sécurité gratuits et instantanés pour vérifier la résilience et l'intégrité de votre infrastructure numérique.",
+        scanBtn: "Analyser",
+        scanningBtn: "Analyse en cours...",
+        backToHome: "Retour à l'accueil",
+        startTest: "Démarrer le test",
+        header: {
+          title: "Header Security Scan",
+          desc: "Analyse les en-têtes HTTP CSP, HSTS, X-Frame-Options et autres.",
+          placeholder: "https://votre-site.com",
+          scoreLabel: "Score de Sécurité",
+          details: "Détails des En-têtes",
+          noData: "Saisissez une URL et lancez l'analyse pour voir les résultats."
+        },
+        ssl: {
+          title: "SSL / TLS Checker",
+          desc: "Validité du certificat, version TLS, suite de chiffrement.",
+          placeholder: "votre-site.com",
+          valid: "Valide",
+          invalid: "Invalide / Expiré",
+          issuer: "Émis par",
+          expires: "Expire le",
+          daysLeft: "jours restants",
+          protocol: "Protocole",
+          cipher: "Suite de Chiffrement",
+          noData: "Saisissez un domaine et lancez la vérification SSL pour voir les résultats."
+        },
+        password: {
+          title: "Password Breach Check",
+          desc: "Vérifiez si votre mot de passe est apparu dans des fuites de données connues (k-anonymat).",
+          placeholder: "Saisissez un mot de passe à vérifier",
+          breached: "ATTENTION ! Ce mot de passe est apparu dans {{count}} fuites de données. Changez-le immédiatement !",
+          safe: "Sûr ! Ce mot de passe n'est apparu dans aucune fuite de données connue.",
+          warning: "Nous n'envoyons jamais votre mot de passe réel au serveur ; nous utilisons un hachage chiffré anonyme (k-anonymat) pour une confidentialité maximale.",
+          noData: "Saisissez un mot de passe pour lancer la vérification."
+        },
+        dns: {
+          title: "Email / DNS Audit",
+          desc: "Vérifiez le SPF, DKIM, DMARC et MX de votre domaine.",
+          placeholder: "votre-domaine.com",
+          configured: "Configuré correctement",
+          missing: "Manquant ou invalide",
+          noData: "Saisissez un domaine pour vérifier les enregistrements DNS."
+        },
+        unlockReport: {
+          title: "DÉBLOQUER LE RAPPORT COMPLET",
+          desc: "Saisissez vos coordonnées : je viendrai vous envoyer le PDF détaillé avec remédiation priorisée.",
+          name: "Nom *",
+          email: "Email professionnel *",
+          company: "Entreprise (optionnel)",
+          consent: "J'accepte le traitement de mes données afin de recevoir le rapport et des communications de Kyberit.",
+          submit: "Recevoir le rapport",
+          sending: "Envoi en cours...",
+          error: "Veuillez remplir tous les champs obligatoires et accepter le traitement des données.",
+          successTitle: "Rapport demandé avec succès !",
+          successDesc: "Nous avons envoyé le rapport détaillé à : {{email}}. Veuillez vérifier votre boîte de réception."
         }
       }
     }

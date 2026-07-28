@@ -11,6 +11,10 @@ import fs from "fs";
 import { OAuth2Client } from "google-auth-library";
 import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from "@simplewebauthn/server";
 import jwt from "jsonwebtoken";
+import dns from "dns";
+import tls from "tls";
+import crypto from "crypto";
+
 
 const DATA_DIR = path.join(process.cwd(), "data");
 if (!fs.existsSync(DATA_DIR)) {
@@ -514,7 +518,7 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
             <p style="font-size: 12px; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">Il tuo messaggio:</p>
             <p style="font-size: 14px; color: #ccc; font-style: italic;">"${message}"</p>
           </div>
-          <p style="font-size: 10px; color: #333; text-align: center; margin-top: 30px;">
+          <p style="font-size: 10px; color: #888; text-align: center; margin-top: 30px;">
             Kyberit IT Solutions - Digital Infrastructure
           </p>
         </div>
@@ -678,6 +682,585 @@ app.post("/api/gemini-proxy", geminiLimiter, async (req, res) => {
 
     res.json({ success: true, id: newDiagnostic.id });
   });
+
+  // --- FREE DIAGNOSTIC TOOLS API ENDPOINTS ---
+
+  // 1. Header Security Scan
+  app.post("/api/tools/header-security", apiLimiter, async (req, res) => {
+    let { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ error: "URL is required" });
+    }
+
+    // Prepend protocol if missing
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+    }
+
+    try {
+      const parsedUrl = new URL(url);
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 6000);
+
+      const response = await fetch(parsedUrl.href, {
+        method: "GET",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 KyberitSecurityScanner/1.0"
+        },
+        signal: controller.signal
+      });
+      clearTimeout(id);
+
+      const headers = response.headers;
+      const securityHeaders = [
+        {
+          name: "Strict-Transport-Security",
+          present: headers.has("strict-transport-security"),
+          value: headers.get("strict-transport-security") || "",
+          score: headers.has("strict-transport-security") ? 20 : 0,
+          description: "Forza la connessione HTTPS sicura.",
+          recommendation: "Aggiungi l'header: max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          name: "Content-Security-Policy",
+          present: headers.has("content-security-policy"),
+          value: headers.get("content-security-policy") || "",
+          score: headers.has("content-security-policy") ? 30 : 0,
+          description: "Previene attacchi XSS e iniezione di dati.",
+          recommendation: "Configura una policy restrittiva per script, stili e immagini."
+        },
+        {
+          name: "X-Frame-Options",
+          present: headers.has("x-frame-options"),
+          value: headers.get("x-frame-options") || "",
+          score: headers.has("x-frame-options") ? 15 : 0,
+          description: "Protegge dal clickjacking impedendo l'incorporamento del sito.",
+          recommendation: "Imposta a DENY o SAMEORIGIN."
+        },
+        {
+          name: "X-Content-Type-Options",
+          present: headers.has("x-content-type-options"),
+          value: headers.get("x-content-type-options") || "",
+          score: headers.has("x-content-type-options") ? 15 : 0,
+          description: "Previene il MIME type sniffing.",
+          recommendation: "Imposta a nosniff."
+        },
+        {
+          name: "Referrer-Policy",
+          present: headers.has("referrer-policy"),
+          value: headers.get("referrer-policy") || "",
+          score: headers.has("referrer-policy") ? 10 : 0,
+          description: "Controlla le informazioni di referrer inviate con le richieste.",
+          recommendation: "Imposta a strict-origin-when-cross-origin."
+        },
+        {
+          name: "Permissions-Policy",
+          present: headers.has("permissions-policy") || headers.has("feature-policy"),
+          value: headers.get("permissions-policy") || headers.get("feature-policy") || "",
+          score: (headers.has("permissions-policy") || headers.has("feature-policy")) ? 10 : 0,
+          description: "Limita l'accesso alle funzionalità del browser (es. fotocamera, geolocalizzazione).",
+          recommendation: "Disabilita le API inutilizzate (es. camera=(), microphone=())."
+        }
+      ];
+
+      const totalScore = securityHeaders.reduce((acc, h) => acc + h.score, 0);
+
+      return res.json({
+        url: parsedUrl.href,
+        score: totalScore,
+        headers: securityHeaders
+      });
+    } catch (error: any) {
+      console.error("Header security scan error:", error);
+      return res.status(500).json({ error: "Impossibile contattare l'URL o formato non valido. Assicurati che il sito sia online." });
+    }
+  });
+
+  // 2. SSL/TLS Checker
+  app.post("/api/tools/ssl-checker", apiLimiter, async (req, res) => {
+    let { domain } = req.body;
+    if (!domain) {
+      return res.status(400).json({ error: "Domain is required" });
+    }
+
+    // Clean domain name
+    let cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0].split(":")[0];
+
+    try {
+      const checkSSL = () => {
+        return new Promise<{
+          valid: boolean;
+          subject: any;
+          issuer: any;
+          validFrom: string;
+          validTo: string;
+          daysRemaining: number;
+          protocol: string;
+          cipher: string;
+        }>((resolve, reject) => {
+          const socket = tls.connect({
+            host: cleanDomain,
+            port: 443,
+            servername: cleanDomain,
+            rejectUnauthorized: false
+          }, () => {
+            const cert = socket.getPeerCertificate();
+            const protocol = socket.getProtocol() || "Unknown";
+            const cipher = socket.getCipher()?.name || "Unknown";
+            socket.destroy();
+
+            if (!cert || !cert.valid_to) {
+              reject(new Error("Nessun certificato SSL trovato"));
+              return;
+            }
+
+            const validToDate = new Date(cert.valid_to);
+            const now = new Date();
+            const daysRemaining = Math.max(0, Math.round((validToDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+            const valid = daysRemaining > 0 && socket.authorized;
+
+            resolve({
+              valid,
+              subject: cert.subject,
+              issuer: cert.issuer,
+              validFrom: cert.valid_from,
+              validTo: cert.valid_to,
+              daysRemaining,
+              protocol,
+              cipher
+            });
+          });
+
+          socket.on("error", (err) => {
+            socket.destroy();
+            reject(err);
+          });
+
+          socket.setTimeout(5000, () => {
+            socket.destroy();
+            reject(new Error("Timeout di connessione SSL"));
+          });
+        });
+      };
+
+      const result = await checkSSL();
+      return res.json(result);
+    } catch (error: any) {
+      console.error("SSL Check error:", error);
+      return res.status(500).json({ error: `Errore verifica SSL per ${cleanDomain}: ${error.message || error}` });
+    }
+  });
+
+  // 3. Password Breach Check
+  app.post("/api/tools/password-breach", apiLimiter, async (req, res) => {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+
+    try {
+      const sha1 = crypto.createHash("sha1").update(password).digest("hex").toUpperCase();
+      const prefix = sha1.substring(0, 5);
+      const suffix = sha1.substring(5);
+
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 4000);
+      const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+        signal: controller.signal
+      });
+      clearTimeout(id);
+
+      if (!response.ok) {
+        throw new Error("Errore API HaveIBeenPwned");
+      }
+
+      const text = await response.text();
+      const lines = text.split("\n");
+      let count = 0;
+
+      for (const line of lines) {
+        const [lineSuffix, lineCount] = line.split(":");
+        if (lineSuffix.trim() === suffix) {
+          count = parseInt(lineCount, 10);
+          break;
+        }
+      }
+
+      return res.json({
+        breached: count > 0,
+        count
+      });
+    } catch (error: any) {
+      console.error("Password breach check error:", error);
+      return res.status(500).json({ error: "Errore durante la verifica del data breach. Riprova più tardi." });
+    }
+  });
+
+  // 4. Email/DNS Audit
+  app.post("/api/tools/dns-audit", apiLimiter, async (req, res) => {
+    let { domain } = req.body;
+    if (!domain) {
+      return res.status(400).json({ error: "Domain is required" });
+    }
+
+    // Clean domain name
+    let cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0].split(":")[0];
+
+    try {
+      const dnsResolver = dns.promises;
+      
+      let spfRecord = "";
+      let dmarcRecord = "";
+      let mxRecords: any[] = [];
+
+      // SPF check
+      try {
+        const txtRecords = await dnsResolver.resolveTxt(cleanDomain);
+        const spf = txtRecords.flat().find(r => r.startsWith("v=spf1"));
+        if (spf) spfRecord = spf;
+      } catch (e) {
+        // ignore
+      }
+
+      // DMARC check
+      try {
+        const dmarcTxt = await dnsResolver.resolveTxt(`_dmarc.${cleanDomain}`);
+        const dmarc = dmarcTxt.flat().find(r => r.startsWith("v=DMARC1"));
+        if (dmarc) dmarcRecord = dmarc;
+      } catch (e) {
+        // ignore
+      }
+
+      // MX check
+      try {
+        mxRecords = await dnsResolver.resolveMx(cleanDomain);
+      } catch (e) {
+        // ignore
+      }
+
+      return res.json({
+        domain: cleanDomain,
+        spf: {
+          present: !!spfRecord,
+          record: spfRecord || null,
+          description: "Controlla quali server sono autorizzati a inviare email per il tuo dominio.",
+          status: spfRecord ? "secure" : "warning"
+        },
+        dmarc: {
+          present: !!dmarcRecord,
+          record: dmarcRecord || null,
+          description: "Fornisce istruzioni al server ricevente su come gestire le email che falliscono SPF/DKIM.",
+          status: dmarcRecord ? "secure" : "warning"
+        },
+        mx: {
+          present: mxRecords.length > 0,
+          records: mxRecords,
+          description: "Indica i server di posta responsabili della ricezione delle email per il dominio.",
+          status: mxRecords.length > 0 ? "secure" : "warning"
+        }
+      });
+    } catch (error: any) {
+      console.error("DNS Audit error:", error);
+      return res.status(500).json({ error: `Errore durante l'audit DNS: ${error.message || error}` });
+    }
+  });
+
+  // 5. Send Report via Email
+  app.post("/api/tools/send-report", apiLimiter, async (req, res) => {
+    const { name, email, company, consent, scanType, scanData, urlOrDomain, lang } = req.body;
+
+    if (!name || !email || !consent) {
+      return res.status(400).json({ error: "Nome, email e consenso al trattamento dei dati sono obbligatori." });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Indirizzo e-mail non valido." });
+    }
+
+    const config = getConfig();
+    const smtpHost = config.smtp.host || process.env.SMTP_HOST;
+    const smtpPort = Number(config.smtp.port || process.env.SMTP_PORT) || 587;
+    const smtpUser = config.smtp.user || process.env.SMTP_USER;
+    const smtpPass = config.smtp.pass || process.env.SMTP_PASS;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      console.error("Configurazione SMTP mancante per l'invio del report.");
+      return res.status(500).json({ error: "Servizio email non configurato sul server." });
+    }
+
+    // Localization Dictionary
+    const dictionary: any = {
+      it: {
+        title: "Il tuo Report di Sicurezza",
+        subtitle: `Ciao ${name}, ecco i dettagli dell'audit richiesto per la tua infrastruttura digitale.`,
+        headerTitle: "Report Sicurezza degli Header HTTP",
+        sslTitle: "Report Controllo SSL / TLS",
+        passwordTitle: "Report Verifica Violazione Password",
+        dnsTitle: "Report Audit Email / DNS",
+        scoreLabel: "Punteggio",
+        presentLabel: "Presente",
+        missingLabel: "Mancante",
+        statusLabel: "Stato",
+        recommendationLabel: "Raccomandazione / Dettagli",
+        issuerLabel: "Emesso da",
+        expiresLabel: "Scade il",
+        daysRemainingLabel: "giorni rimanenti",
+        protocolLabel: "Protocollo",
+        cipherLabel: "Cipher Suite",
+        passOk: "Sicura (non trovata nei data breach noti)",
+        passBreached: `Compromessa (rilevata nei data breach noti)`,
+        passNote: "Nota: I controlli avvengono in modo totalmente anonimo tramite k-anonymity (senza mai inviare la password in chiaro al server).",
+        configuredLabel: "Configurato",
+        missingDnsLabel: "Mancante",
+        spfLabel: "Record SPF",
+        dmarcLabel: "Record DMARC",
+        mxLabel: "Record MX",
+        footerCompany: "Azienda",
+        footerConsent: "Consenso Trattamento Dati",
+        subject: `Kyberit Labs: Report Sicurezza per ${urlOrDomain || 'Audit'}`
+      },
+      en: {
+        title: "Your Security Report",
+        subtitle: `Hello ${name}, here are the details of the audit requested for your digital infrastructure.`,
+        headerTitle: "HTTP Headers Security Scan Report",
+        sslTitle: "SSL / TLS Checker Report",
+        passwordTitle: "Password Breach Check Report",
+        dnsTitle: "Email / DNS Audit Report",
+        scoreLabel: "Score",
+        presentLabel: "Present",
+        missingLabel: "Missing",
+        statusLabel: "Status",
+        recommendationLabel: "Recommendation / Details",
+        issuerLabel: "Issued by",
+        expiresLabel: "Expires on",
+        daysRemainingLabel: "days remaining",
+        protocolLabel: "Protocol",
+        cipherLabel: "Cipher Suite",
+        passOk: "Safe (not found in known data breaches)",
+        passBreached: `Compromised (detected in known data breaches)`,
+        passNote: "Note: Controls are completely anonymous via k-anonymity (without ever sending the plain password to the server).",
+        configuredLabel: "Configured",
+        missingDnsLabel: "Missing",
+        spfLabel: "SPF Record",
+        dmarcLabel: "DMARC Record",
+        mxLabel: "MX Record",
+        footerCompany: "Company",
+        footerConsent: "Data Processing Consent",
+        subject: `Kyberit Labs: Security Report for ${urlOrDomain || 'Audit'}`
+      },
+      de: {
+        title: "Ihr Sicherheitsbericht",
+        subtitle: `Hallo ${name}, hier sind die Details des angeforderten Audits für Ihre digitale Infrastruktur.`,
+        headerTitle: "Sicherheitsbericht für HTTP-Header",
+        sslTitle: "SSL / TLS Prüfbericht",
+        passwordTitle: "Passwort-Sicherheitsbericht",
+        dnsTitle: "E-Mail / DNS Auditbericht",
+        scoreLabel: "Bewertung",
+        presentLabel: "Vorhanden",
+        missingLabel: "Fehlend",
+        statusLabel: "Status",
+        recommendationLabel: "Empfehlung / Details",
+        issuerLabel: "Ausgestellt von",
+        expiresLabel: "Läuft ab am",
+        daysRemainingLabel: "Tage verbleibend",
+        protocolLabel: "Protokoll",
+        cipherLabel: "Cipher-Suite",
+        passOk: "Sicher (in bekannten Datenlecks nicht gefunden)",
+        passBreached: `Gefährdet (in bekannten Datenlecks gefunden)`,
+        passNote: "Hinweis: Die Prüfungen erfolgen über k-Anonymität vollständig anonym (ohne Übertragung des Passworts im Klartext an den Server).",
+        configuredLabel: "Konfiguriert",
+        missingDnsLabel: "Fehlend",
+        spfLabel: "SPF-Eintrag",
+        dmarcLabel: "DMARC-Eintrag",
+        mxLabel: "MX-Eintrag",
+        footerCompany: "Unternehmen",
+        footerConsent: "Einwilligung Datenverarbeitung",
+        subject: `Kyberit Labs: Sicherheitsbericht für ${urlOrDomain || 'Audit'}`
+      },
+      fr: {
+        title: "Votre Rapport de Sécurité",
+        subtitle: `Bonjour ${name}, voici les détails de l'audit demandé pour votre infrastructure numérique.`,
+        headerTitle: "Rapport d'analyse de sécurité des en-têtes HTTP",
+        sslTitle: "Rapport de vérification SSL / TLS",
+        passwordTitle: "Rapport de compromission de mot de passe",
+        dnsTitle: "Rapport d'audit e-mail / DNS",
+        scoreLabel: "Score",
+        presentLabel: "Présent",
+        missingLabel: "Absent",
+        statusLabel: "Statut",
+        recommendationLabel: "Recommandation / Détails",
+        issuerLabel: "Émis par",
+        expiresLabel: "Expire le",
+        daysRemainingLabel: "jours restants",
+        protocolLabel: "Protocole",
+        cipherLabel: "Suite de chiffrement",
+        passOk: "Sécurisé (non trouvé dans les fuites de données connues)",
+        passBreached: `Compromis (détecté dans les fuites de données connues)`,
+        passNote: "Remarque : Les contrôles s'effectuent de manière totalement anonyme via la k-anonymat (sans jamais envoyer le mot de passe en clair au serveur).",
+        configuredLabel: "Configuré",
+        missingDnsLabel: "Manquant",
+        spfLabel: "Enregistrement SPF",
+        dmarcLabel: "Enregistrement DMARC",
+        mxLabel: "Enregistrement MX",
+        footerCompany: "Entreprise",
+        footerConsent: "Consentement Traitement Données",
+        subject: `Kyberit Labs: Rapport de Sécurité pour ${urlOrDomain || 'Audit'}`
+      }
+    };
+
+    const userLang = lang === "en" || lang === "de" || lang === "fr" ? lang : "it";
+    const t = dictionary[userLang];
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+
+      const senderEmail = config.smtp.from || process.env.SMTP_FROM || (isValidEmail(smtpUser) ? smtpUser : undefined);
+      const adminRecipient = config.smtp.contactEmail || process.env.CONTACT_RECIPIENT || "info@kyberit.tech";
+
+      if (!senderEmail) {
+        return res.status(500).json({ error: "Mittente email non configurato." });
+      }
+
+      // Generate a detailed report HTML based on scanType and scanData
+      let reportDetailsHtml = "";
+      if (scanType === "header") {
+        reportDetailsHtml = `
+          <h3 style="color: #00f2ff; font-family: sans-serif;">${t.headerTitle}</h3>
+          <p style="color: #ccc; font-family: sans-serif;">Target: <strong>${urlOrDomain}</strong></p>
+          <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin: 20px 0;">
+            <p style="font-size: 24px; font-weight: bold; color: #4ade80; margin: 0; font-family: sans-serif;">${t.scoreLabel}: ${scanData.score}/100</p>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #eee; font-family: sans-serif;">
+            <thead>
+              <tr style="border-bottom: 2px solid #333; text-align: left;">
+                <th style="padding: 10px;">Header</th>
+                <th style="padding: 10px;">${t.statusLabel}</th>
+                <th style="padding: 10px;">${t.recommendationLabel}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${scanData.headers.map((h: any) => `
+                <tr style="border-bottom: 1px solid #222;">
+                  <td style="padding: 12px; font-weight: bold;">${h.name}</td>
+                  <td style="padding: 12px; color: ${h.present ? '#4ade80' : '#f87171'}">${h.present ? t.presentLabel : t.missingLabel}</td>
+                  <td style="padding: 12px; font-size: 13px; color: #aaa;">
+                    ${h.present ? `<code style="background: #222; padding: 2px 4px; border-radius: 4px; font-size: 11px;">${h.value}</code>` : h.recommendation}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (scanType === "ssl") {
+        reportDetailsHtml = `
+          <h3 style="color: #00f2ff; font-family: sans-serif;">${t.sslTitle}</h3>
+          <p style="color: #ccc; font-family: sans-serif;">Target: <strong>${urlOrDomain}</strong></p>
+          <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin: 20px 0; font-family: sans-serif;">
+            <p style="font-size: 18px; font-weight: bold; color: ${scanData.valid ? '#4ade80' : '#f87171'}; margin: 0;">
+              ${t.statusLabel}: ${scanData.valid ? t.presentLabel : t.missingLabel}
+            </p>
+          </div>
+          <ul style="color: #ccc; line-height: 1.8; font-family: sans-serif;">
+            <li><strong>${t.issuerLabel}:</strong> ${scanData.issuer?.O || scanData.issuer?.CN || 'N/A'}</li>
+            <li><strong>${t.expiresLabel}:</strong> ${new Date(scanData.validTo).toLocaleDateString()} (${scanData.daysRemaining} ${t.daysRemainingLabel})</li>
+            <li><strong>${t.protocolLabel}:</strong> ${scanData.protocol}</li>
+            <li><strong>${t.cipherLabel}:</strong> ${scanData.cipher}</li>
+          </ul>
+        `;
+      } else if (scanType === "password") {
+        reportDetailsHtml = `
+          <h3 style="color: #00f2ff; font-family: sans-serif;">${t.passwordTitle}</h3>
+          <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin: 20px 0; font-family: sans-serif;">
+            <p style="font-size: 18px; font-weight: bold; color: ${scanData.breached ? '#f87171' : '#4ade80'}; margin: 0;">
+              ${scanData.breached ? `${t.passBreached} (${scanData.count})` : t.passOk}
+            </p>
+          </div>
+          <p style="color: #aaa; font-size: 13px; font-family: sans-serif;">
+            ${t.passNote}
+          </p>
+        `;
+      } else if (scanType === "dns") {
+        reportDetailsHtml = `
+          <h3 style="color: #00f2ff; font-family: sans-serif;">${t.dnsTitle}</h3>
+          <p style="color: #ccc; font-family: sans-serif;">Target: <strong>${urlOrDomain}</strong></p>
+          <ul style="color: #ccc; line-height: 2; font-family: sans-serif; list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px;">
+              <strong style="font-size: 15px;">${t.spfLabel}:</strong> ${scanData.spf.present ? `<span style="color: #4ade80;">${t.configuredLabel}</span>` : `<span style="color: #f87171;">${t.missingDnsLabel}</span>`}<br>
+              <span style="font-size: 12px; color: #888;">${scanData.spf.description}</span>
+              ${scanData.spf.present ? `<br><code style="background: #222; padding: 4px; display: block; margin-top: 5px; font-size: 11px; border-radius: 4px;">${scanData.spf.record}</code>` : ''}
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px;">
+              <strong style="font-size: 15px;">${t.dmarcLabel}:</strong> ${scanData.dmarc.present ? `<span style="color: #4ade80;">${t.configuredLabel}</span>` : `<span style="color: #f87171;">${t.missingDnsLabel}</span>`}<br>
+              <span style="font-size: 12px; color: #888;">${scanData.dmarc.description}</span>
+              ${scanData.dmarc.present ? `<br><code style="background: #222; padding: 4px; display: block; margin-top: 5px; font-size: 11px; border-radius: 4px;">${scanData.dmarc.record}</code>` : ''}
+            </li>
+            <li style="margin-bottom: 15px;">
+              <strong style="font-size: 15px;">${t.mxLabel}:</strong> ${scanData.mx.present ? `<span style="color: #4ade80;">${t.configuredLabel}</span>` : `<span style="color: #f87171;">${t.missingDnsLabel}</span>`}<br>
+              <span style="font-size: 12px; color: #888;">${scanData.mx.description}</span>
+            </li>
+          </ul>
+        `;
+      }
+
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #050505; color: #ffffff; border: 1px solid #1a1a1a; padding: 30px; border-radius: 15px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; background-color: #00f2ff; color: #000000; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 10px; letter-spacing: 1px;">KYBERIT SECURITY LABS</div>
+          </div>
+          <h2 style="color: #ffffff; text-align: center;">${t.title}</h2>
+          <p style="color: #999; text-align: center; line-height: 1.6;">${t.subtitle}</p>
+          
+          <div style="margin-top: 30px; border-top: 1px solid #1a1a1a; padding-top: 20px;">
+            ${reportDetailsHtml}
+          </div>
+
+          <div style="border-top: 1px solid #1a1a1a; padding-top: 20px; text-align: center; font-size: 10px; color: #888; margin-top: 30px;">
+            Kyberit IT Solutions - Digital Infrastructure<br>
+            ${t.footerCompany}: ${company || 'N/A'}<br>
+            ${t.footerConsent}: YES (GDPR compliant)<br>
+            Timestamp: ${new Date().toISOString()}
+          </div>
+        </div>
+      `;
+
+      // Send to user
+      await transporter.sendMail({
+        from: senderEmail,
+        to: email,
+        subject: t.subject,
+        html: emailHtml
+      });
+
+      // Send copy to admin
+      if (isValidEmail(adminRecipient)) {
+        await transporter.sendMail({
+          from: senderEmail,
+          to: adminRecipient,
+          subject: `[TOOL REPORT REQUEST] ${scanType.toUpperCase()} - ${urlOrDomain} - ${email}`,
+          html: `
+            <h3>Nuova richiesta report da strumenti gratuiti</h3>
+            <p><strong>Nome:</strong> ${name}</p>
+            <p><strong>Email di lavoro:</strong> ${email}</p>
+            <p><strong>Azienda:</strong> ${company || 'N/A'}</p>
+            <p><strong>Strumento:</strong> ${scanType}</p>
+            <p><strong>Target:</strong> ${urlOrDomain}</p>
+            <p><strong>Lingua:</strong> ${userLang}</p>
+          `
+        });
+      }
+
+      return res.json({ success: true, message: "Report inviato con successo via email!" });
+    } catch (error: any) {
+      console.error("Report email error:", error);
+      return res.status(500).json({ error: "Errore durante l'invio del report via email. Riprova più tardi." });
+    }
+  });
+
 
 
   // Vite middleware for development
